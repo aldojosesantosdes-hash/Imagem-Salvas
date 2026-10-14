@@ -1,0 +1,11 @@
+{
+  "name": "liveness-demo",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Protótipo de detecção de vivacidade (liveness) no navegador, com desafios ativos aleatórios.",
+  "scripts": {
+    "test": "node --test test/logic.test.js",
+    "start": "python3 -m http.server 8080"
+  }
+}
