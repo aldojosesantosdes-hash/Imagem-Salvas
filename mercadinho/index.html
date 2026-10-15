@@ -1,0 +1,525 @@
+<title>Caixa do Mercadinho</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=Figtree:wght@400;500;600&display=swap">
+<style>
+/* Layout: barra de abas fixa no topo; cada aba é uma tela de trabalho com uma coluna (celular) ou duas (balcão). */
+:root{
+  --bg:#f3f5f2; --surface:#ffffff; --sunk:#e8ece6; --fg:#18201b; --muted:#5d6a61; --line:#d5ddd5;
+  --accent:#1d6b43; --accent-fg:#ffffff; --good:#1d6b43; --warn:#a15c00; --bad:#b3261e;
+  --display:"Bricolage Grotesque",ui-rounded,system-ui,sans-serif;
+  --body:"Figtree",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111613; --surface:#18201b; --sunk:#202a23; --fg:#e7ede8; --muted:#9aa89e; --line:#2c3830;
+  --accent:#4cc38a; --accent-fg:#0b1a12; --good:#4cc38a; --warn:#f0a73c; --bad:#ff8a80; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111613; --surface:#18201b; --sunk:#202a23; --fg:#e7ede8; --muted:#9aa89e; --line:#2c3830;
+  --accent:#4cc38a; --accent-fg:#0b1a12; --good:#4cc38a; --warn:#f0a73c; --bad:#ff8a80; color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:15px/1.45 var(--body)}
+.num{font-variant-numeric:tabular-nums}
+header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);
+  padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.top{display:flex;align-items:center;gap:12px;flex-wrap:wrap;max-width:1100px;margin:0 auto}
+.brand{font:800 1.25rem/1 var(--display);letter-spacing:-.01em;margin-right:auto}
+.who{color:var(--muted);font-size:.85rem}
+nav{display:flex;gap:6px;flex-wrap:wrap;max-width:1100px;margin:10px auto 0}
+nav button{font:600 .9rem var(--body);background:var(--sunk);color:var(--fg);border:0;border-radius:999px;padding:8px 14px;cursor:pointer}
+nav button[aria-current="true"]{background:var(--accent);color:var(--accent-fg)}
+main{max-width:1100px;margin:0 auto;padding-block:16px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h2{font:700 1.15rem var(--display);margin:0 0 10px;text-wrap:balance}
+h3{font:600 .78rem var(--body);text-transform:uppercase;letter-spacing:.06em;color:var(--muted);margin:0 0 8px}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px;min-width:0}
+.cols{display:grid;gap:14px;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)}
+@media (max-width:760px){.cols{grid-template-columns:minmax(0,1fr)}}
+.stack{display:flex;flex-direction:column;gap:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row > *{min-width:0}
+label{display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:var(--muted);flex:1 1 120px}
+input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
+input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.scan{font-size:1.1rem;padding:12px}
+button.btn{font:600 .95rem var(--body);border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:9px 14px;cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
+button.danger{color:var(--bad)}
+button:disabled{opacity:.5;cursor:default}
+.tiles{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
+.tile{text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:10px;cursor:pointer;font:inherit}
+.tile b{display:block;font-weight:600;overflow-wrap:anywhere}
+.tile span{color:var(--muted);font-size:.85rem}
+.tile.low{border-color:var(--warn)}
+table{width:100%;border-collapse:collapse}
+.tw{overflow-x:auto}
+th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);font-weight:600}
+td.r,th.r{text-align:right}
+.total{display:flex;justify-content:space-between;align-items:baseline;font:800 1.8rem var(--display)}
+.pill{display:inline-block;font-size:.75rem;font-weight:600;border-radius:999px;padding:2px 8px;background:var(--sunk)}
+.pill.warn{color:var(--warn)} .pill.bad{color:var(--bad)} .pill.good{color:var(--good)}
+.kpis{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:12px}
+.kpi span{color:var(--muted);font-size:.82rem}
+.kpi b{display:block;font:800 1.5rem var(--display)}
+.muted{color:var(--muted)}
+.empty{color:var(--muted);padding:12px 0}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;z-index:10}
+.qty{display:inline-flex;align-items:center;gap:4px}
+.qty button{width:28px;height:28px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.switch{flex-direction:row;align-items:center;gap:10px;color:var(--fg);font-size:.95rem}
+.switch input{width:auto}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header>
+  <div class="top">
+    <div class="brand">Caixa do Mercadinho</div>
+    <span class="who" id="who">Conectando…</span>
+  </div>
+  <nav id="nav" aria-label="Seções"></nav>
+</header>
+
+<main>
+  <div id="status" class="panel muted">Carregando os dados da loja…</div>
+
+  <!-- CAIXA -->
+  <section id="tab-caixa" hidden>
+    <div class="cols">
+      <div class="stack">
+        <div class="panel stack">
+          <label for="scan">Código de barras (leitor) ou nome do produto
+            <input id="scan" class="scan" autocomplete="off" placeholder="Bipe o código ou digite e tecle Enter">
+          </label>
+          <div class="tiles" id="tiles"></div>
+        </div>
+      </div>
+      <div class="panel stack">
+        <h2>Venda atual</h2>
+        <div class="tw"><table><thead><tr><th>Item</th><th>Qtd</th><th class="r">Total</th><th></th></tr></thead><tbody id="cart"></tbody></table></div>
+        <div class="total"><span>Total</span><span class="num" id="cartTotal">R$ 0,00</span></div>
+        <div class="row">
+          <label for="pay">Pagamento
+            <select id="pay"><option value="dinheiro">Dinheiro</option><option value="pix">Pix</option><option value="cartao">Cartão</option><option value="fiado">Fiado</option></select>
+          </label>
+          <label for="payClient" id="payClientWrap" hidden>Cliente do fiado
+            <select id="payClient"></select>
+          </label>
+          <label for="paid" id="paidWrap">Valor recebido
+            <input id="paid" inputmode="decimal" placeholder="0,00">
+          </label>
+        </div>
+        <p class="muted num" id="change"></p>
+        <div class="row">
+          <button class="btn primary" id="finish" type="button">Finalizar venda</button>
+          <button class="btn" id="clearCart" type="button">Limpar</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PRODUTOS -->
+  <section id="tab-produtos" hidden>
+    <div class="cols">
+      <div class="panel stack">
+        <h2>Produtos e estoque</h2>
+        <input id="prodFilter" placeholder="Filtrar por nome ou código" aria-label="Filtrar produtos">
+        <div class="tw"><table><thead><tr><th>Produto</th><th class="r">Preço</th><th class="r cost">Custo</th><th class="r">Estoque</th><th></th></tr></thead><tbody id="prodList"></tbody></table></div>
+      </div>
+      <form class="panel stack" id="prodForm">
+        <h2 id="prodFormTitle">Novo produto</h2>
+        <label for="pNome">Nome<input id="pNome" required></label>
+        <label for="pCodigo">Código de barras (opcional)<input id="pCodigo" placeholder="Bipe aqui para cadastrar"></label>
+        <div class="row">
+          <label for="pPreco">Preço de venda<input id="pPreco" inputmode="decimal" required></label>
+          <label for="pCusto" class="cost">Custo<input id="pCusto" inputmode="decimal"></label>
+        </div>
+        <div class="row">
+          <label for="pEstoque">Estoque atual<input id="pEstoque" inputmode="decimal"></label>
+          <label for="pMin">Avisar abaixo de<input id="pMin" inputmode="decimal"></label>
+        </div>
+        <div class="row">
+          <button class="btn primary" type="submit">Salvar produto</button>
+          <button class="btn" type="button" id="prodCancel" hidden>Cancelar edição</button>
+          <button class="btn danger" type="button" id="prodDelete" hidden>Excluir</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <!-- FIADO -->
+  <section id="tab-fiado" hidden>
+    <div class="cols">
+      <div class="panel stack">
+        <h2>Caderneta do fiado</h2>
+        <div class="tw"><table><thead><tr><th>Cliente</th><th>Telefone</th><th class="r">Deve</th><th></th></tr></thead><tbody id="cliList"></tbody></table></div>
+      </div>
+      <div class="stack">
+        <form class="panel stack" id="cliForm">
+          <h2>Novo cliente</h2>
+          <label for="cNome">Nome<input id="cNome" required></label>
+          <label for="cTel">Telefone<input id="cTel" inputmode="tel"></label>
+          <button class="btn primary" type="submit">Cadastrar cliente</button>
+        </form>
+        <form class="panel stack" id="recForm">
+          <h2>Receber pagamento</h2>
+          <label for="rCli">Cliente<select id="rCli"></select></label>
+          <label for="rVal">Valor recebido<input id="rVal" inputmode="decimal" required></label>
+          <button class="btn primary" type="submit">Registrar pagamento</button>
+        </form>
+      </div>
+    </div>
+  </section>
+
+  <!-- RELATÓRIO -->
+  <section id="tab-relatorio" hidden>
+    <div class="stack">
+      <div class="row"><label for="repDay" style="flex:0 1 200px">Dia<input id="repDay" type="date"></label></div>
+      <div class="kpis" id="kpis"></div>
+      <div class="cols">
+        <div class="panel"><h3>Mais vendidos no dia</h3><div class="tw"><table><thead><tr><th>Produto</th><th class="r">Qtd</th><th class="r">Total</th></tr></thead><tbody id="topList"></tbody></table></div></div>
+        <div class="panel"><h3>Estoque baixo</h3><div class="tw"><table><thead><tr><th>Produto</th><th class="r">Estoque</th><th class="r">Mínimo</th></tr></thead><tbody id="lowList"></tbody></table></div></div>
+      </div>
+      <div class="panel"><h3>Vendas do dia</h3><div class="tw"><table><thead><tr><th>Hora</th><th>Itens</th><th>Pagamento</th><th class="r">Total</th><th></th></tr></thead><tbody id="saleList"></tbody></table></div></div>
+    </div>
+  </section>
+
+  <!-- CONFIGURAÇÕES (dono) -->
+  <section id="tab-config" hidden>
+    <div class="panel stack" style="max-width:620px">
+      <h2>O que os funcionários podem ver e fazer</h2>
+      <p class="muted">O caixa fica sempre liberado. Você, como dono, vê tudo.</p>
+      <label class="switch" for="permProdutos"><input type="checkbox" id="permProdutos"> Cadastrar e editar produtos e estoque</label>
+      <label class="switch" for="permCusto"><input type="checkbox" id="permCusto"> Ver preço de custo e lucro</label>
+      <label class="switch" for="permFiado"><input type="checkbox" id="permFiado"> Usar a caderneta do fiado (vender e receber fiado)</label>
+      <label class="switch" for="permRelatorio"><input type="checkbox" id="permRelatorio"> Ver relatório de vendas</label>
+      <label class="switch" for="permCancelar"><input type="checkbox" id="permCancelar"> Cancelar vendas</label>
+      <div><button class="btn primary" id="savePerms" type="button">Salvar permissões</button></div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+  const $ = (id) => document.getElementById(id);
+  const brl = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+  const money = (v) => brl.format(Number(v) || 0);
+  const parseNum = (s) => { const n = parseFloat(String(s ?? '').trim().replace(/\./g, '').replace(',', '.')); return Number.isFinite(n) ? n : 0; };
+  const fmtInput = (n) => (Number(n) || 0).toFixed(2).replace('.', ',');
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const dayKey = (d) => { const x = new Date(d); return `${x.getFullYear()}-${String(x.getMonth() + 1).padStart(2, '0')}-${String(x.getDate()).padStart(2, '0')}`; };
+  const PAY = { dinheiro: 'Dinheiro', pix: 'Pix', cartao: 'Cartão', fiado: 'Fiado' };
+  const DEFAULT_PERMS = { produtos: false, custo: false, fiado: true, relatorio: false, cancelar: false };
+
+  let db = null, me = null, isBoss = false;
+  let products = [], clients = [], sales = [], perms = { ...DEFAULT_PERMS };
+  let cart = [];
+  let tab = 'caixa';
+  let editingId = null;
+  let busy = false;
+
+  function toast(msg) {
+    const t = $('toast'); t.textContent = msg; t.hidden = false;
+    clearTimeout(toast.h); toast.h = setTimeout(() => (t.hidden = true), 2600);
+  }
+  const can = (k) => isBoss || !!perms[k];
+
+  function tabs() {
+    const list = [['caixa', 'Caixa']];
+    if (can('produtos')) list.push(['produtos', 'Produtos']);
+    if (can('fiado')) list.push(['fiado', 'Fiado']);
+    if (can('relatorio')) list.push(['relatorio', 'Relatório']);
+    if (isBoss) list.push(['config', 'Funcionários']);
+    return list;
+  }
+
+  function renderNav() {
+    const list = tabs();
+    if (!list.some(([k]) => k === tab)) tab = 'caixa';
+    $('nav').innerHTML = list.map(([k, l]) => `<button type="button" data-tab="${k}" aria-current="${k === tab}">${l}</button>`).join('');
+    document.querySelectorAll('main > section').forEach((s) => (s.hidden = s.id !== 'tab-' + tab));
+    document.querySelectorAll('.cost').forEach((el) => (el.hidden = !can('custo')));
+    if (tab === 'caixa') setTimeout(() => $('scan').focus(), 0);
+  }
+  $('nav').addEventListener('click', (e) => {
+    const b = e.target.closest('button[data-tab]'); if (!b) return;
+    tab = b.dataset.tab; renderNav(); render();
+  });
+
+  // ---------- CAIXA ----------
+  function addToCart(p, qtd = 1) {
+    const line = cart.find((l) => l.id === p.id);
+    if (line) line.qtd += qtd; else cart.push({ id: p.id, nome: p.nome, preco: Number(p.preco) || 0, custo: Number(p.custo) || 0, qtd });
+    renderCart();
+  }
+  const cartTotal = () => cart.reduce((s, l) => s + l.preco * l.qtd, 0);
+
+  function renderTiles() {
+    const q = $('scan').value.trim().toLowerCase();
+    const list = products
+      .filter((p) => !q || p.nome.toLowerCase().includes(q) || String(p.codigo || '').includes(q))
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'))
+      .slice(0, 24);
+    $('tiles').innerHTML = list.length
+      ? list.map((p) => `<button type="button" class="tile${lowStock(p) ? ' low' : ''}" data-id="${esc(p.id)}"><b>${esc(p.nome)}</b><span class="num">${money(p.preco)} · ${fmtQty(p.estoque)} un</span></button>`).join('')
+      : `<p class="empty">${products.length ? 'Nenhum produto com esse nome ou código.' : 'Nenhum produto cadastrado ainda. Cadastre na aba Produtos.'}</p>`;
+  }
+  const fmtQty = (n) => (Number(n) || 0).toLocaleString('pt-BR', { maximumFractionDigits: 3 });
+  const lowStock = (p) => Number(p.minimo) > 0 && Number(p.estoque) <= Number(p.minimo);
+
+  function renderCart() {
+    $('cart').innerHTML = cart.length
+      ? cart.map((l, i) => `<tr><td>${esc(l.nome)}<div class="muted num">${money(l.preco)}</div></td>
+          <td><span class="qty"><button type="button" data-dec="${i}" aria-label="Diminuir">−</button><span class="num">${fmtQty(l.qtd)}</span><button type="button" data-inc="${i}" aria-label="Aumentar">+</button></span></td>
+          <td class="r num">${money(l.preco * l.qtd)}</td><td class="r"><button type="button" class="btn danger" data-rm="${i}">Remover</button></td></tr>`).join('')
+      : `<tr><td colspan="4" class="empty">Bipe um código ou toque num produto para começar.</td></tr>`;
+    $('cartTotal').textContent = money(cartTotal());
+    renderChange();
+  }
+  function renderChange() {
+    const fiado = $('pay').value === 'fiado';
+    $('payClientWrap').hidden = !fiado;
+    $('paidWrap').hidden = $('pay').value !== 'dinheiro';
+    const paid = parseNum($('paid').value), tot = cartTotal();
+    $('change').textContent = $('pay').value === 'dinheiro' && paid > 0
+      ? (paid >= tot ? `Troco: ${money(paid - tot)}` : `Faltam ${money(tot - paid)}`) : '';
+  }
+  $('cart').addEventListener('click', (e) => {
+    const t = e.target;
+    if (t.dataset.inc) cart[+t.dataset.inc].qtd += 1;
+    else if (t.dataset.dec) { const l = cart[+t.dataset.dec]; l.qtd -= 1; if (l.qtd <= 0) cart.splice(+t.dataset.dec, 1); }
+    else if (t.dataset.rm) cart.splice(+t.dataset.rm, 1);
+    else return;
+    renderCart();
+  });
+  $('tiles').addEventListener('click', (e) => {
+    const b = e.target.closest('.tile'); if (!b) return;
+    const p = products.find((x) => x.id === b.dataset.id); if (p) addToCart(p);
+    $('scan').value = ''; renderTiles(); $('scan').focus();
+  });
+  $('scan').addEventListener('input', renderTiles);
+  $('scan').addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    e.preventDefault();
+    const v = $('scan').value.trim(); if (!v) return;
+    // "3*789..." multiplica a quantidade
+    const m = v.match(/^(\d+(?:[.,]\d+)?)\s*\*\s*(.+)$/);
+    const qtd = m ? parseNum(m[1]) : 1, term = m ? m[2] : v;
+    let p = products.find((x) => x.codigo && String(x.codigo) === term);
+    if (!p) { const hits = products.filter((x) => x.nome.toLowerCase().includes(term.toLowerCase())); if (hits.length === 1) p = hits[0]; }
+    if (p) { addToCart(p, qtd); $('scan').value = ''; renderTiles(); }
+    else toast('Produto não encontrado. Cadastre o código na aba Produtos.');
+  });
+  $('pay').addEventListener('change', renderChange);
+  $('paid').addEventListener('input', renderChange);
+  $('clearCart').addEventListener('click', () => { cart = []; $('paid').value = ''; renderCart(); });
+
+  $('finish').addEventListener('click', async () => {
+    if (busy || !cart.length) return;
+    const pagamento = $('pay').value;
+    const total = cartTotal();
+    let cliente = null;
+    if (pagamento === 'fiado') {
+      if (!can('fiado')) return toast('Venda fiado não está liberada para você.');
+      cliente = clients.find((c) => c.id === $('payClient').value);
+      if (!cliente) return toast('Escolha o cliente do fiado.');
+    }
+    if (pagamento === 'dinheiro' && $('paid').value && parseNum($('paid').value) < total) return toast('Valor recebido menor que o total.');
+    busy = true; $('finish').disabled = true;
+    try {
+      const venda = {
+        data: new Date().toISOString(), dia: dayKey(Date.now()),
+        itens: cart.map((l) => ({ id: l.id, nome: l.nome, qtd: l.qtd, preco: l.preco, custo: l.custo })),
+        total, pagamento, cliente: cliente ? cliente.id : null, vendedor: me?.id || null, cancelada: false,
+      };
+      await db.collection('vendas').add(venda);
+      for (const l of cart) {
+        const p = products.find((x) => x.id === l.id);
+        if (p) await db.doc('produtos/' + p.id).update({ estoque: (Number(p.estoque) || 0) - l.qtd });
+      }
+      if (cliente) await db.doc('clientes/' + cliente.id).update({ saldo: (Number(cliente.saldo) || 0) + total });
+      cart = []; $('paid').value = ''; renderCart();
+      toast(`Venda registrada: ${money(total)}`);
+    } catch (err) {
+      toast(writeError(err));
+    } finally { busy = false; $('finish').disabled = false; $('scan').focus(); }
+  });
+
+  function writeError(err) {
+    if (err && err.code === 'not_granted') return 'Você não tem permissão para gravar. Peça ao dono acesso de colaborador.';
+    return 'Não foi possível salvar. Verifique a conexão e tente de novo.';
+  }
+
+  // ---------- PRODUTOS ----------
+  function renderProducts() {
+    const q = $('prodFilter').value.trim().toLowerCase();
+    const list = products.filter((p) => !q || p.nome.toLowerCase().includes(q) || String(p.codigo || '').includes(q))
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt-BR'));
+    $('prodList').innerHTML = list.length ? list.map((p) => `<tr>
+        <td>${esc(p.nome)}${p.codigo ? `<div class="muted num">${esc(p.codigo)}</div>` : ''}</td>
+        <td class="r num">${money(p.preco)}</td>
+        <td class="r num cost"${can('custo') ? '' : ' hidden'}>${money(p.custo)}</td>
+        <td class="r num">${fmtQty(p.estoque)} ${lowStock(p) ? '<span class="pill warn">baixo</span>' : ''}</td>
+        <td class="r"><button type="button" class="btn" data-edit="${esc(p.id)}">Editar</button></td></tr>`).join('')
+      : `<tr><td colspan="5" class="empty">${products.length ? 'Nada encontrado.' : 'Cadastre o primeiro produto no formulário ao lado.'}</td></tr>`;
+  }
+  $('prodFilter').addEventListener('input', renderProducts);
+  $('prodList').addEventListener('click', (e) => {
+    const id = e.target.dataset.edit; if (!id) return;
+    const p = products.find((x) => x.id === id); if (!p) return;
+    editingId = id;
+    $('prodFormTitle').textContent = 'Editar produto';
+    $('pNome').value = p.nome; $('pCodigo').value = p.codigo || '';
+    $('pPreco').value = fmtInput(p.preco); $('pCusto').value = fmtInput(p.custo);
+    $('pEstoque').value = fmtQty(p.estoque); $('pMin').value = p.minimo ? fmtQty(p.minimo) : '';
+    $('prodCancel').hidden = false; $('prodDelete').hidden = false; $('prodDelete').dataset.armed = '';
+    $('prodDelete').textContent = 'Excluir';
+    $('pNome').focus();
+  });
+  function resetProdForm() {
+    editingId = null; $('prodForm').reset(); $('prodFormTitle').textContent = 'Novo produto';
+    $('prodCancel').hidden = true; $('prodDelete').hidden = true;
+  }
+  $('prodCancel').addEventListener('click', resetProdForm);
+  $('pCodigo').addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); $('pPreco').focus(); } });
+  $('prodForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const codigo = $('pCodigo').value.trim();
+    if (codigo && products.some((p) => p.codigo === codigo && p.id !== editingId)) return toast('Já existe um produto com esse código.');
+    const data = {
+      nome: $('pNome').value.trim(), codigo,
+      preco: parseNum($('pPreco').value), estoque: parseNum($('pEstoque').value), minimo: parseNum($('pMin').value),
+    };
+    if (can('custo')) data.custo = parseNum($('pCusto').value);
+    if (!data.nome) return;
+    try {
+      if (editingId) await db.doc('produtos/' + editingId).update(data);
+      else await db.collection('produtos').add({ custo: 0, ...data });
+      toast(editingId ? 'Produto atualizado' : 'Produto cadastrado');
+      resetProdForm();
+    } catch (err) { toast(writeError(err)); }
+  });
+  $('prodDelete').addEventListener('click', async () => {
+    const b = $('prodDelete');
+    if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Toque de novo para excluir'; return; }
+    try { await db.doc('produtos/' + editingId).delete(); toast('Produto excluído'); resetProdForm(); }
+    catch (err) { toast(writeError(err)); }
+  });
+
+  // ---------- FIADO ----------
+  function renderClients() {
+    const sorted = [...clients].sort((a, b) => (Number(b.saldo) || 0) - (Number(a.saldo) || 0) || a.nome.localeCompare(b.nome, 'pt-BR'));
+    $('cliList').innerHTML = sorted.length ? sorted.map((c) => `<tr><td>${esc(c.nome)}</td><td class="num">${esc(c.telefone || '')}</td>
+      <td class="r num">${Number(c.saldo) > 0.004 ? `<span class="pill bad">${money(c.saldo)}</span>` : '<span class="pill good">em dia</span>'}</td>
+      <td class="r"><button type="button" class="btn" data-rec="${esc(c.id)}">Receber</button></td></tr>`).join('')
+      : '<tr><td colspan="4" class="empty">Nenhum cliente na caderneta. Cadastre ao lado.</td></tr>';
+    const opts = sorted.length ? sorted.map((c) => `<option value="${esc(c.id)}">${esc(c.nome)} (${money(c.saldo)})</option>`).join('') : '<option value="">Cadastre um cliente na aba Fiado</option>';
+    const keepPay = $('payClient').value, keepRec = $('rCli').value;
+    $('payClient').innerHTML = opts; $('rCli').innerHTML = opts;
+    if (keepPay) $('payClient').value = keepPay; if (keepRec) $('rCli').value = keepRec;
+  }
+  $('cliList').addEventListener('click', (e) => { const id = e.target.dataset.rec; if (id) { $('rCli').value = id; $('rVal').focus(); } });
+  $('cliForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const nome = $('cNome').value.trim(); if (!nome) return;
+    try { await db.collection('clientes').add({ nome, telefone: $('cTel').value.trim(), saldo: 0 }); $('cliForm').reset(); toast('Cliente cadastrado'); }
+    catch (err) { toast(writeError(err)); }
+  });
+  $('recForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const c = clients.find((x) => x.id === $('rCli').value), v = parseNum($('rVal').value);
+    if (!c || v <= 0) return toast('Escolha o cliente e o valor.');
+    try {
+      await db.collection('recebimentos').add({ cliente: c.id, valor: v, data: new Date().toISOString(), dia: dayKey(Date.now()), recebidoPor: me?.id || null });
+      await db.doc('clientes/' + c.id).update({ saldo: Math.max(0, (Number(c.saldo) || 0) - v) });
+      $('recForm').reset(); toast(`Recebido ${money(v)} de ${c.nome}`);
+    } catch (err) { toast(writeError(err)); }
+  });
+
+  // ---------- RELATÓRIO ----------
+  $('repDay').value = dayKey(Date.now());
+  $('repDay').addEventListener('change', renderReport);
+  function renderReport() {
+    const day = $('repDay').value;
+    const daySales = sales.filter((s) => s.dia === day && !s.cancelada).sort((a, b) => b.data.localeCompare(a.data));
+    const total = daySales.reduce((s, v) => s + (Number(v.total) || 0), 0);
+    const custo = daySales.reduce((s, v) => s + v.itens.reduce((a, i) => a + (Number(i.custo) || 0) * i.qtd, 0), 0);
+    const byPay = {}; daySales.forEach((s) => (byPay[s.pagamento] = (byPay[s.pagamento] || 0) + Number(s.total)));
+    const fiadoAberto = clients.reduce((s, c) => s + (Number(c.saldo) || 0), 0);
+    const k = [
+      ['Vendido no dia', money(total)],
+      ['Vendas', String(daySales.length)],
+      ['Ticket médio', money(daySales.length ? total / daySales.length : 0)],
+    ];
+    if (can('custo')) k.push(['Lucro bruto', money(total - custo)]);
+    Object.keys(PAY).forEach((p) => { if (byPay[p]) k.push([PAY[p], money(byPay[p])]); });
+    if (can('fiado')) k.push(['Fiado em aberto (total)', money(fiadoAberto)]);
+    $('kpis').innerHTML = k.map(([l, v]) => `<div class="kpi"><span>${l}</span><b class="num">${v}</b></div>`).join('');
+
+    const agg = {};
+    daySales.forEach((s) => s.itens.forEach((i) => { const a = agg[i.nome] || (agg[i.nome] = { q: 0, t: 0 }); a.q += i.qtd; a.t += i.qtd * i.preco; }));
+    const top = Object.entries(agg).sort((a, b) => b[1].t - a[1].t).slice(0, 10);
+    $('topList').innerHTML = top.length ? top.map(([n, a]) => `<tr><td>${esc(n)}</td><td class="r num">${fmtQty(a.q)}</td><td class="r num">${money(a.t)}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">Sem vendas neste dia.</td></tr>';
+
+    const low = products.filter(lowStock).sort((a, b) => a.estoque - b.estoque);
+    $('lowList').innerHTML = low.length ? low.map((p) => `<tr><td>${esc(p.nome)}</td><td class="r num">${fmtQty(p.estoque)}</td><td class="r num">${fmtQty(p.minimo)}</td></tr>`).join('') : '<tr><td colspan="3" class="empty">Nenhum produto abaixo do mínimo.</td></tr>';
+
+    const allDay = sales.filter((s) => s.dia === day).sort((a, b) => b.data.localeCompare(a.data));
+    $('saleList').innerHTML = allDay.length ? allDay.map((s) => `<tr>
+      <td class="num">${new Date(s.data).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</td>
+      <td>${esc(s.itens.map((i) => `${fmtQty(i.qtd)}× ${i.nome}`).join(', '))}</td>
+      <td>${PAY[s.pagamento] || esc(s.pagamento)}${s.cliente ? ' · ' + esc(clients.find((c) => c.id === s.cliente)?.nome || '') : ''}</td>
+      <td class="r num">${s.cancelada ? '<span class="pill bad">cancelada</span> ' : ''}${money(s.total)}</td>
+      <td class="r">${!s.cancelada && can('cancelar') ? `<button type="button" class="btn danger" data-cancel="${esc(s.id)}">Cancelar</button>` : ''}</td></tr>`).join('')
+      : '<tr><td colspan="5" class="empty">Nenhuma venda registrada neste dia.</td></tr>';
+  }
+  $('saleList').addEventListener('click', async (e) => {
+    const b = e.target.closest('[data-cancel]'); if (!b) return;
+    if (!b.dataset.armed) { b.dataset.armed = '1'; b.textContent = 'Confirmar cancelamento'; return; }
+    const s = sales.find((x) => x.id === b.dataset.cancel); if (!s || s.cancelada) return;
+    try {
+      await db.doc('vendas/' + s.id).update({ cancelada: true, canceladaPor: me?.id || null });
+      for (const i of s.itens) { const p = products.find((x) => x.id === i.id); if (p) await db.doc('produtos/' + p.id).update({ estoque: (Number(p.estoque) || 0) + i.qtd }); }
+      if (s.cliente) { const c = clients.find((x) => x.id === s.cliente); if (c) await db.doc('clientes/' + c.id).update({ saldo: Math.max(0, (Number(c.saldo) || 0) - s.total) }); }
+      toast('Venda cancelada e estoque devolvido');
+    } catch (err) { toast(writeError(err)); }
+  });
+
+  // ---------- PERMISSÕES ----------
+  const PERM_IDS = { produtos: 'permProdutos', custo: 'permCusto', fiado: 'permFiado', relatorio: 'permRelatorio', cancelar: 'permCancelar' };
+  function renderPerms() { Object.entries(PERM_IDS).forEach(([k, id]) => ($(id).checked = !!perms[k])); }
+  $('savePerms').addEventListener('click', async () => {
+    const next = {}; Object.entries(PERM_IDS).forEach(([k, id]) => (next[k] = $(id).checked));
+    try { await db.doc('config/permissoes').set(next); toast('Permissões salvas'); }
+    catch (err) { toast(writeError(err)); }
+  });
+
+  function render() {
+    renderTiles(); renderCart(); renderProducts(); renderClients(); renderReport();
+    if (isBoss) renderPerms();
+  }
+
+  // ---------- CONEXÃO ----------
+  async function start() {
+    const user = await window.claude?.use?.('user');
+    db = await window.claude?.use?.('db');
+    if (!db) {
+      $('status').textContent = 'Não foi possível conectar aos dados da loja. Abra este link com sua conta do Claude para usar o caixa.';
+      $('who').textContent = 'Sem conexão';
+      return;
+    }
+    me = user ? await user.me() : null;
+    isBoss = user ? (await user.canEdit()) || (await user.isOwner()) : false;
+    $('who').textContent = `${me?.name || 'Você'} · ${isBoss ? 'Dono' : 'Funcionário'}`;
+    $('status').hidden = true;
+    renderNav(); render();
+    const docs = (snap) => snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+    const fail = () => toast('Conexão com os dados interrompida. Recarregue a página.');
+    db.collection('produtos').onSnapshot((s) => { products = docs(s); renderTiles(); renderProducts(); renderReport(); }, fail);
+    db.collection('clientes').onSnapshot((s) => { clients = docs(s); renderClients(); renderReport(); }, fail);
+    db.collection('vendas').where('dia', '>=', dayKey(Date.now() - 90 * 864e5)).onSnapshot((s) => { sales = docs(s); renderReport(); }, fail);
+    db.doc('config/permissoes').onSnapshot((d) => { perms = { ...DEFAULT_PERMS, ...(d.exists ? d.data() : {}) }; renderNav(); render(); }, () => {});
+  }
+  start();
+})();
+</script>
