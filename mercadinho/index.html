@@ -17,7 +17,7 @@
   --bg:#111613; --surface:#18201b; --sunk:#202a23; --fg:#e7ede8; --muted:#9aa89e; --line:#2c3830;
   --accent:#4cc38a; --accent-fg:#0b1a12; --good:#4cc38a; --warn:#f0a73c; --bad:#ff8a80; color-scheme:dark}
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--fg);font:15px/1.45 var(--body)}
+body{background:var(--bg);color:var(--fg);font:16px/1.45 var(--body)}
 .num{font-variant-numeric:tabular-nums}
 header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);
   padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
@@ -25,7 +25,7 @@ header{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var
 .brand{font:800 1.25rem/1 var(--display);letter-spacing:-.01em;margin-right:auto}
 .who{color:var(--muted);font-size:.85rem}
 nav{display:flex;gap:6px;flex-wrap:wrap;max-width:1100px;margin:10px auto 0}
-nav button{font:600 .9rem var(--body);background:var(--sunk);color:var(--fg);border:0;border-radius:999px;padding:8px 14px;cursor:pointer}
+nav button{font:600 1rem var(--body);background:var(--sunk);color:var(--fg);border:0;border-radius:999px;padding:10px 18px;cursor:pointer}
 nav button[aria-current="true"]{background:var(--accent);color:var(--accent-fg)}
 main{max-width:1100px;margin:0 auto;padding-block:16px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
 h2{font:700 1.15rem var(--display);margin:0 0 10px;text-wrap:balance}
@@ -40,12 +40,13 @@ label{display:flex;flex-direction:column;gap:4px;font-size:.82rem;color:var(--mu
 input,select{font:inherit;color:var(--fg);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%}
 input:focus-visible,select:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .scan{font-size:1.1rem;padding:12px}
-button.btn{font:600 .95rem var(--body);border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:9px 14px;cursor:pointer}
+button.btn{font:600 1rem var(--body);border:1px solid var(--line);background:var(--surface);color:var(--fg);border-radius:8px;padding:11px 16px;cursor:pointer}
+#finish{flex:1 1 auto;font-size:1.15rem;padding:16px}
 button.primary{background:var(--accent);color:var(--accent-fg);border-color:var(--accent)}
 button.danger{color:var(--bad)}
 button:disabled{opacity:.5;cursor:default}
 .tiles{display:grid;gap:8px;grid-template-columns:repeat(auto-fill,minmax(130px,1fr))}
-.tile{text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:10px;cursor:pointer;font:inherit}
+.tile{text-align:left;border:1px solid var(--line);background:var(--bg);color:var(--fg);border-radius:8px;padding:14px 12px;cursor:pointer;font:inherit;min-height:72px}
 .tile b{display:block;font-weight:600;overflow-wrap:anywhere}
 .tile span{color:var(--muted);font-size:.85rem}
 .tile.low{border-color:var(--warn)}
@@ -65,7 +66,7 @@ td.r,th.r{text-align:right}
 .empty{color:var(--muted);padding:12px 0}
 .toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--fg);color:var(--bg);padding:10px 16px;border-radius:8px;font-weight:600;z-index:10}
 .qty{display:inline-flex;align-items:center;gap:4px}
-.qty button{width:28px;height:28px;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
+.qty button{width:36px;height:36px;font-size:1.1rem;border-radius:6px;border:1px solid var(--line);background:var(--surface);color:var(--fg);cursor:pointer}
 .switch{flex-direction:row;align-items:center;gap:10px;color:var(--fg);font-size:.95rem}
 .switch input{width:auto}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
@@ -87,15 +88,15 @@ td.r,th.r{text-align:right}
     <div class="cols">
       <div class="stack">
         <div class="panel stack">
-          <label for="scan">Código de barras (leitor) ou nome do produto
-            <input id="scan" class="scan" autocomplete="off" placeholder="Bipe o código ou digite e tecle Enter">
+          <label for="scan">Buscar produto
+            <input id="scan" class="scan" autocomplete="off" placeholder="Passe o leitor ou digite o nome">
           </label>
           <div class="tiles" id="tiles"></div>
         </div>
       </div>
       <div class="panel stack">
-        <h2>Venda atual</h2>
-        <div class="tw"><table><thead><tr><th>Item</th><th>Qtd</th><th class="r">Total</th><th></th></tr></thead><tbody id="cart"></tbody></table></div>
+        <h2>Venda</h2>
+        <div class="tw"><table><tbody id="cart"></tbody></table></div>
         <div class="total"><span>Total</span><span class="num" id="cartTotal">R$ 0,00</span></div>
         <div class="row">
           <label for="pay">Pagamento
@@ -104,14 +105,14 @@ td.r,th.r{text-align:right}
           <label for="payClient" id="payClientWrap" hidden>Cliente do fiado
             <select id="payClient"></select>
           </label>
-          <label for="paid" id="paidWrap">Valor recebido
+          <label for="paid" id="paidWrap">Cliente pagou (para calcular o troco)
             <input id="paid" inputmode="decimal" placeholder="0,00">
           </label>
         </div>
         <p class="muted num" id="change"></p>
         <div class="row">
           <button class="btn primary" id="finish" type="button">Finalizar venda</button>
-          <button class="btn" id="clearCart" type="button">Limpar</button>
+          <button class="btn" id="clearCart" type="button">Limpar venda</button>
         </div>
       </div>
     </div>
@@ -173,11 +174,11 @@ td.r,th.r{text-align:right}
   <!-- RELATÓRIO -->
   <section id="tab-relatorio" hidden>
     <div class="stack">
-      <div class="row"><label for="repDay" style="flex:0 1 200px">Dia<input id="repDay" type="date"></label></div>
+      <div class="row"><label for="repDay" style="flex:0 1 200px">Ver o dia<input id="repDay" type="date"></label></div>
       <div class="kpis" id="kpis"></div>
       <div class="cols">
-        <div class="panel"><h3>Mais vendidos no dia</h3><div class="tw"><table><thead><tr><th>Produto</th><th class="r">Qtd</th><th class="r">Total</th></tr></thead><tbody id="topList"></tbody></table></div></div>
-        <div class="panel"><h3>Estoque baixo</h3><div class="tw"><table><thead><tr><th>Produto</th><th class="r">Estoque</th><th class="r">Mínimo</th></tr></thead><tbody id="lowList"></tbody></table></div></div>
+        <div class="panel" hidden><table><tbody id="topList"></tbody></table></div>
+        <div class="panel"><h3>Comprar (estoque baixo)</h3><div class="tw"><table><thead><tr><th>Produto</th><th class="r">Estoque</th><th class="r">Mínimo</th></tr></thead><tbody id="lowList"></tbody></table></div></div>
       </div>
       <div class="panel"><h3>Vendas do dia</h3><div class="tw"><table><thead><tr><th>Hora</th><th>Itens</th><th>Pagamento</th><th class="r">Total</th><th></th></tr></thead><tbody id="saleList"></tbody></table></div></div>
     </div>
@@ -271,8 +272,8 @@ td.r,th.r{text-align:right}
     $('cart').innerHTML = cart.length
       ? cart.map((l, i) => `<tr><td>${esc(l.nome)}<div class="muted num">${money(l.preco)}</div></td>
           <td><span class="qty"><button type="button" data-dec="${i}" aria-label="Diminuir">−</button><span class="num">${fmtQty(l.qtd)}</span><button type="button" data-inc="${i}" aria-label="Aumentar">+</button></span></td>
-          <td class="r num">${money(l.preco * l.qtd)}</td><td class="r"><button type="button" class="btn danger" data-rm="${i}">Remover</button></td></tr>`).join('')
-      : `<tr><td colspan="4" class="empty">Bipe um código ou toque num produto para começar.</td></tr>`;
+          <td class="r num">${money(l.preco * l.qtd)}</td></tr>`).join('')
+      : `<tr><td colspan="3" class="empty">Toque num produto ou passe o leitor.</td></tr>`;
     $('cartTotal').textContent = money(cartTotal());
     renderChange();
   }
@@ -446,15 +447,12 @@ td.r,th.r{text-align:right}
     const custo = daySales.reduce((s, v) => s + v.itens.reduce((a, i) => a + (Number(i.custo) || 0) * i.qtd, 0), 0);
     const byPay = {}; daySales.forEach((s) => (byPay[s.pagamento] = (byPay[s.pagamento] || 0) + Number(s.total)));
     const fiadoAberto = clients.reduce((s, c) => s + (Number(c.saldo) || 0), 0);
-    const k = [
-      ['Vendido no dia', money(total)],
-      ['Vendas', String(daySales.length)],
-      ['Ticket médio', money(daySales.length ? total / daySales.length : 0)],
-    ];
-    if (can('custo')) k.push(['Lucro bruto', money(total - custo)]);
-    Object.keys(PAY).forEach((p) => { if (byPay[p]) k.push([PAY[p], money(byPay[p])]); });
-    if (can('fiado')) k.push(['Fiado em aberto (total)', money(fiadoAberto)]);
-    $('kpis').innerHTML = k.map(([l, v]) => `<div class="kpi"><span>${l}</span><b class="num">${v}</b></div>`).join('');
+    const k = [[`Vendido (${daySales.length} ${daySales.length === 1 ? 'venda' : 'vendas'})`, money(total)]];
+    if (can('custo')) k.push(['Lucro', money(total - custo)]);
+    if (can('fiado')) k.push(['Fiado a receber', money(fiadoAberto)]);
+    const split = Object.keys(PAY).filter((p) => byPay[p]).map((p) => `${PAY[p]} ${money(byPay[p])}`).join(' · ');
+    $('kpis').innerHTML = k.map(([l, v]) => `<div class="kpi"><span>${l}</span><b class="num">${v}</b></div>`).join('')
+      + (split ? `<p class="muted num" style="grid-column:1/-1;margin:0">${split}</p>` : '');
 
     const agg = {};
     daySales.forEach((s) => s.itens.forEach((i) => { const a = agg[i.nome] || (agg[i.nome] = { q: 0, t: 0 }); a.q += i.qtd; a.t += i.qtd * i.preco; }));
