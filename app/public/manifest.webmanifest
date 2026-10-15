@@ -1,0 +1,11 @@
+{
+  "name": "Caixa de Bairro",
+  "short_name": "Caixa",
+  "description": "Caixa, estoque e fiado para o mercadinho de bairro.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#eef1ee",
+  "theme_color": "#0d1f17",
+  "lang": "pt-BR",
+  "icons": [{ "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }]
+}
