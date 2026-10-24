@@ -62,7 +62,7 @@ async function abrir(arquivo) {
     const prev = await lerMarcacoes(bytes);
     let recuperadas = 0;
     for (const p of efetivo(st.escala, st.sel)) {
-      const r = prev[p.campo];
+      const r = prev[p.campo] || prev[`#${p.chave}`];
       if (!r) continue;
       const obs = (r.obs || '').trim();
       if (r.marcado) st.marcas[p.chave] = { status: 'P', obs };

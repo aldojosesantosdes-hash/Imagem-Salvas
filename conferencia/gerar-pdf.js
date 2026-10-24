@@ -31,6 +31,17 @@ export async function gerarPdf(dados) {
     while (t.length > 1 && fonte.widthOfTextAtSize(t, tam) > larg) t = t.slice(0, -2) + '…';
     return t;
   };
+  const quebrar = (s, fonte, tam, larg, max) => {
+    const linhas = [];
+    let atual = '';
+    for (const w of seguro(s).split(/\s+/)) {
+      const teste = atual ? `${atual} ${w}` : w;
+      if (atual && fonte.widthOfTextAtSize(teste, tam) > larg) { linhas.push(atual); atual = w; } else atual = teste;
+    }
+    if (atual) linhas.push(atual);
+    if (linhas.length > max) linhas.splice(max - 1, linhas.length, linhas.slice(max - 1).join(' '));
+    return linhas;
+  };
   const txt = (pg, s, x, y, { f = reg, size = 7, color = TEXTO, larg } = {}) => {
     const t = larg ? caber(s, f, size, larg) : seguro(s);
     pg.drawText(t, { x, y, size, font: f, color });
@@ -87,9 +98,12 @@ export async function gerarPdf(dados) {
   };
 
   const cabecalhoTabela = (s, cont) => {
-    pg.drawRectangle({ x: M, y: y - 22, width: A4[0] - 2 * M, height: 22, color: AZUL });
-    txt(pg, s.titulo + (cont ? ' (cont.)' : ''), M + 7, y - 14, { f: neg, size: 7, color: rgb(1, 1, 1), larg: A4[0] - 2 * M - 14 });
-    y -= 34;
+    // Títulos longos (ex.: escolta de urnas com local de apresentação) quebram em até 3 linhas.
+    const linhas = quebrar(s.titulo + (cont ? ' (cont.)' : ''), neg, 7, A4[0] - 2 * M - 14, 3);
+    const alt = 22 + (linhas.length - 1) * 9;
+    pg.drawRectangle({ x: M, y: y - alt, width: A4[0] - 2 * M, height: alt, color: AZUL });
+    linhas.forEach((l, k) => txt(pg, l, M + 7, y - 14 - k * 9, { f: neg, size: 7, color: rgb(1, 1, 1), larg: A4[0] - 2 * M - 14 }));
+    y -= alt + 12;
     txt(pg, `${s.data}, DE ${s.horaInicio} ÀS ${s.horaFim}`, M + 5, y, { f: neg, size: 6.2, color: AZUL });
     y -= 6;
     pg.drawRectangle({ x: M, y: y - 14, width: A4[0] - 2 * M, height: 14, color: CINZA_CAB });
@@ -107,7 +121,7 @@ export async function gerarPdf(dados) {
   const marca = `${nomeDoc}${dados.emitente ? ' · ' + dados.emitente : ''}`;
 
   for (const s of dados.secoes) {
-    garantir(22 + 34 + 14 + LINHA * Math.min(2, s.policiais.length));
+    garantir(22 + 18 + 34 + 14 + LINHA * Math.min(2, s.policiais.length));
     cabecalhoTabela(s, false);
     s.policiais.forEach((p, i) => {
       if (y - LINHA < 70) { novaPagina(false); cabecalhoTabela(s, true); }
@@ -182,11 +196,20 @@ export async function lerMarcacoes(bytes) {
   let doc;
   try { doc = await PDFDocument.load(bytes, { ignoreEncryption: true }); } catch { return out; }
   for (const f of doc.getForm().getFields()) {
-    const m = f.getName().match(/_presenca_(\d+(?:_\d+)?)(_obs)?$/);
-    if (!m) continue;
-    const reg = (out[m[1]] ||= {});
-    if (m[2] && f instanceof PDFTextField) reg.obs = f.getText() || '';
-    else if (!m[2] && f instanceof PDFCheckBox) reg.marcado = f.isChecked();
+    const nome = f.getName();
+    // Padrão deste app: <posto>_presenca_<matrícula>[_obs]. Padrão por setor: p<seção>_<linha> / o<seção>_<linha>.
+    let chave;
+    let obs;
+    let m = nome.match(/_presenca_(\d+(?:_\d+)?)(_obs)?$/);
+    if (m) { chave = m[1]; obs = !!m[2]; } else {
+      m = nome.match(/^([po])(\d+)_(\d+)$/);
+      if (!m) continue;
+      chave = `#${m[2]}_${m[3]}`;
+      obs = m[1] === 'o';
+    }
+    const reg = (out[chave] ||= {});
+    if (obs && f instanceof PDFTextField) reg.obs = f.getText() || '';
+    else if (!obs && f instanceof PDFCheckBox) reg.marcado = f.isChecked();
   }
   return out;
 }

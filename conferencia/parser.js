@@ -5,7 +5,9 @@ const RE_MATRICULA = /^\d{6,10}$/;
 const RE_SECAO = /^(.*?)\s*-?\s*DATA:\s*(\d{2}\/\d{2}\/\d{4}),?\s*DE\s+(\d{1,2}h\d{2})\s+(?:ÀS|AS|ÁS|A)\s+(\d{1,2}h\d{2})/i;
 const RE_DATA_SOLTA = /^(\d{2}\/\d{2}\/\d{4}),?\s*DE\s+(\d{1,2}h\d{2})\s+(?:ÀS|AS|ÁS|A)\s+(\d{1,2}h\d{2})\s*$/i;
 const RE_CABECALHO_TABELA = /^Nome\s+Matr[íi]cula/i;
-const RE_IGNORAR = /^(PRESCRI[ÇC][ÕO]ES:?|POL[ÍI]CIA MILITAR DA BAHIA|CONFER[ÊE]NCIA DIGITAL DE PRESEN[ÇC]A|P[áa]gina \d+ de \d+|C[ÓO]PIA CONTROLADA.*|Marque a presen.*|Confer[êe]ncia do comandante.*)$/i;
+const RE_IGNORAR = /^(PRESCRI[ÇC][ÕO]ES:?|POL[ÍI]CIA MILITAR DA BAHIA|CONFER[ÊE]NCIA DIGITAL DE PRESEN[ÇC]A.*|C[ÓO]PIA CONTROLADA.*|Marque a presen.*|Confer[êe]ncia do comandante.*|\d+ grupos? organizados.*|.*P[áa]gina \d+ de \d+)$/i;
+const RE_TURNO = /^TURNO\s+(\d{2}\/\d{2}\/\d{4})\s*[·,\-–]?\s*(\d{1,2}h\d{2})\s+(?:ÀS|AS|ÁS|A)\s+(\d{1,2}h\d{2})/i;
+const RE_SUBTITULO_CONF = /^CONFER[ÊE]NCIA DIGITAL DE PRESEN[ÇC]A\s*[—–-]\s*(.+)$/i;
 
 // Agrupa itens ({str, x, y, w}) em linhas, da mais alta para a mais baixa (y do PDF cresce para cima).
 export function linhasDeItens(itens, tolY = 2.5) {
@@ -62,12 +64,28 @@ export function interpretarEscala(linhas) {
   const antesDaPrimeira = [];
   let atual = null;
   let colFuncao = null;
-  let anterior = null; // última linha "solta" (candidata a título de seção quebrado)
+  let soltas = []; // linhas sem estrutura desde a última tabela (títulos quebrados, nomes de grupo)
+  let grupo = null; // formato por setor: "SETOR 1" + "TURNO dd/mm/aaaa · 07h00 ÀS 13h00"
+  let subtituloConf = '';
+
+  const consumir = (usadas) => {
+    for (const u of usadas) {
+      const k = antesDaPrimeira.indexOf(u);
+      if (k >= 0) antesDaPrimeira.splice(k, 1);
+    }
+    soltas = [];
+  };
+  const novaSecao = (titulo, data, horaInicio, horaFim) => {
+    atual = { titulo, data, horaInicio, horaFim, policiais: [] };
+    secoes.push(atual);
+  };
 
   for (let i = 0; i < linhas.length; i++) {
-    let linha = linhas[i];
+    const linha = linhas[i];
     let t = linha.texto;
-    if (RE_IGNORAR.test(t)) { anterior = null; continue; }
+    const sub = t.match(RE_SUBTITULO_CONF);
+    if (sub && !subtituloConf) subtituloConf = sub[1].trim();
+    if (RE_IGNORAR.test(t)) { soltas = []; continue; }
 
     // Cabeçalho de seção quebrado em duas linhas ("... DE 13h00" / "ÀS 21h00").
     if (/DATA:/i.test(t) && !RE_SECAO.test(t) && linhas[i + 1]) {
@@ -77,46 +95,69 @@ export function interpretarEscala(linhas) {
 
     let m = t.match(RE_SECAO);
     if (m) {
-      let titulo = m[1].replace(/\s*-\s*$/, '').trim();
-      if (!titulo && anterior) titulo = anterior.texto; // título numa linha, "DATA: ..." na seguinte
-      atual = { titulo, data: m[2], horaInicio: m[3], horaFim: m[4], policiais: [] };
-      secoes.push(atual);
-      anterior = null;
+      // Título longo quebrado em várias linhas acima de "... - DATA:": sobe enquanto as linhas estiverem coladas.
+      const usadas = [];
+      let ref = linha;
+      for (let k = soltas.length - 1; k >= 0; k--) {
+        const s = soltas[k];
+        const gap = s.y - ref.y;
+        if (gap <= 0 || gap > 13 || Math.abs(s.x - linha.x) > 3) break;
+        usadas.unshift(s);
+        ref = s;
+      }
+      let titulo = [...usadas.map((u) => u.texto), m[1].replace(/\s*-\s*$/, '').trim()].filter(Boolean).join(' ');
+      if (!titulo && soltas.length) { usadas.push(soltas[soltas.length - 1]); titulo = usadas[0].texto; }
+      novaSecao(titulo, m[2], m[3], m[4]);
+      consumir(usadas);
+      continue;
+    }
+    m = t.match(RE_TURNO);
+    if (m) {
+      const nome = soltas.length ? soltas[soltas.length - 1] : null;
+      grupo = { nome: nome ? nome.texto.replace(/\s+\d+\s+PMs?$/i, '').trim() : '', data: m[1], horaInicio: m[2], horaFim: m[3] };
+      consumir(nome ? [nome] : []);
       continue;
     }
     m = t.match(RE_DATA_SOLTA);
-    if (m && anterior) {
+    if (m && soltas.length) {
       // Formato da conferência: título numa barra, data na linha de baixo.
-      atual = { titulo: anterior.texto, data: m[1], horaInicio: m[2], horaFim: m[3], policiais: [] };
-      secoes.push(atual);
-      anterior = null;
+      const s = soltas[soltas.length - 1];
+      novaSecao(s.texto, m[1], m[2], m[3]);
+      consumir([s]);
       continue;
     }
     if (RE_CABECALHO_TABELA.test(t)) {
       const itF = linha.itens.find((it) => /^Fun[çc][ãa]o/i.test(it.str.trim()));
       colFuncao = itF ? itF.x : null;
-      anterior = null;
+      // Formato por setor: o título da equipe vem logo acima da tabela, sem data própria.
+      if (grupo && soltas.length) {
+        const s = soltas[soltas.length - 1];
+        novaSecao(grupo.nome ? `${grupo.nome} - ${s.texto}` : s.texto, grupo.data, grupo.horaInicio, grupo.horaFim);
+        consumir([s]);
+      }
+      soltas = [];
       continue;
     }
 
     const p = atual ? linhaPolicial(linha) : null;
     if (p) {
       atual.policiais.push(p);
-      anterior = null;
+      soltas = [];
       continue;
     }
 
     // Função que quebrou para a linha de baixo ("Coordenador" / "Operacional").
     const ult = atual && atual.policiais[atual.policiais.length - 1];
-    if (ult && colFuncao !== null && Math.abs(linha.x - colFuncao) < 6 && !/\d/.test(t)) {
+    if (ult && soltas.length === 0 && colFuncao !== null && Math.abs(linha.x - colFuncao) < 6 && !/\d/.test(t)) {
       ult.funcao = `${ult.funcao} ${t}`.trim();
       continue;
     }
     if (!atual) antesDaPrimeira.push(linha);
-    anterior = linha;
+    soltas.push(linha);
   }
 
   const cab = cabecalhoDoc(antesDaPrimeira);
+  if (!cab.subtitulo && subtituloConf) cab.subtitulo = subtituloConf;
   return { ...cab, secoes: secoes.filter((s) => s.policiais.length > 0) };
 }
 

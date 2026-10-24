@@ -73,3 +73,39 @@ test('sufixo comum e slug', () => {
   assert.equal(sufixoComum(['A X', 'B Y']), '');
   assert.equal(slug('PORTAL ALFREDO DE BRITO'), 'Portal-Alfredo-de-Brito');
 });
+
+test('escala com título quebrado em várias linhas acima de "DATA:"', () => {
+  const e = interpretarEscala(pagina([
+    [[34, 'PRESCRIÇÕES:']],
+    [[34, 'ESCOLTA DE URNAS - ROTEIRO 1/RIBEIRA - AS GUARNIÇÕES DEVERÃO APRESENTAR-SE ÀS 15h NO']],
+    [[34, 'CENTRO DE APOIO TÉCNICO - DATA: 04/10/2026, DE 14h00 ÀS 20h00']],
+    [[37, 'Nome'], [330, 'Matrícula'], [400, 'Função']],
+    [[37, 'SUB TEN PM JULIO CESAR DE JESUS'], [330, '30293132'], [400, 'Comandante']],
+  ].map((l) => l)).map((l, i) => ({ ...l, y: 800 - i * 9.7 })));
+  assert.equal(e.secoes[0].titulo, 'ESCOLTA DE URNAS - ROTEIRO 1/RIBEIRA - AS GUARNIÇÕES DEVERÃO APRESENTAR-SE ÀS 15h NO CENTRO DE APOIO TÉCNICO');
+  assert.equal(e.secoes[0].horaInicio, '14h00');
+});
+
+test('conferência por setor: grupo "SETOR" + "TURNO" e equipes sem data própria', () => {
+  const e = interpretarEscala(pagina([
+    [[97, 'CPRC - BTS | 18º BPM - CENTRO HISTÓRICO']],
+    [[203, 'ELEIÇÃO - 2º TURNO 2026']],
+    [[140, 'CONFERÊNCIA DIGITAL DE PRESENÇA — SETOR 1 · 07H–13H']],
+    [[42, '9 grupos organizados por setor e horário.']],
+    [[54, 'SETOR 1'], [500, '19 PMs']],
+    [[42, 'TURNO 25/10/2026 · 07h00 ÀS 13h00 — 19 PMs']],
+    [[52, 'COORDENAÇÃO DO POLICIAMENTO']],
+    [[47, 'Nome'], [330, 'Matrícula'], [400, 'Função'], [480, 'Presente'], [530, 'Observação']],
+    [[47, 'CAP PM ALDO JOSE SANTOS DE SOUZA'], [330, '30507741'], [400, 'Coordenador']],
+    [[52, 'COLÉGIO MANOEL NOVAES']],
+    [[47, 'Nome'], [330, 'Matrícula'], [400, 'Função'], [480, 'Presente'], [530, 'Observação']],
+    [[47, 'SGT PM ALESSANDRO ALMEIDA GOMES'], [330, '30437545'], [400, 'Comandante']],
+    [[42, '18º BPM - Centro Histórico | ELEIÇÃO - 2º TURNO 2026'], [500, 'Página 1 de 2']],
+  ]));
+  assert.equal(e.unidade, '18º BPM - CENTRO HISTÓRICO');
+  assert.equal(e.titulo, 'ELEIÇÃO - 2º TURNO 2026');
+  assert.equal(e.subtitulo, 'SETOR 1 · 07H–13H');
+  assert.deepEqual(e.secoes.map((s) => s.titulo), ['SETOR 1 - COORDENAÇÃO DO POLICIAMENTO', 'SETOR 1 - COLÉGIO MANOEL NOVAES']);
+  assert.equal(e.secoes[1].data, '25/10/2026');
+  assert.equal(e.secoes[1].horaFim, '13h00');
+});
