@@ -16,7 +16,31 @@ Aplicação web (estática, funciona offline depois de aberta) que lê a **escal
 2. Carregue a escala em PDF.
 3. Em **Seções a conferir**, digite o termo do posto (ex.: `ALFREDO DE BRITO`) e toque em **Selecionar**. Subtítulo e responsável são sugeridos automaticamente e podem ser editados.
 4. Para cada policial: **P** (presente) ou **F** (falta); tocar de novo desmarca. Use a observação para atraso, substituição ou dispensa.
-5. **Gerar PDF da conferência**.
+5. **Gerar PDF** (conferência preenchível) e/ou **Release** (texto no padrão de WhatsApp).
+
+## Release
+
+Texto pronto para o grupo, montado com as seções selecionadas:
+
+```
+*CPRC-BTS   18ºBPM*
+
+*ELEIÇÃO 2026*
+_04/10/2026 · 07h00 às 13h00_
+
+Comandante do Setor: CAP PM ...
+Adjunto: TEN PM ...
+
+*Setor 3*
+Posto 01 - *Colégio Estadual Ursula Catharino*
+SGT PM ... E SD PM ...
+```
+
+- Seções de coordenação/comando/supervisão viram linhas `Função: Nome`; as demais viram postos numerados.
+- O local do posto sai sem o prefixo do setor e da modalidade (`SETOR 3 - PO A PÉ - `).
+- Manhã e tarde selecionadas juntas viram blocos separados por turno.
+- Observação `Substituído por FULANO` na conferência faz o release trazer o substituto.
+- O texto pode ser editado antes de copiar, enviar pelo WhatsApp ou baixar em `.txt`.
 
 As marcações ficam salvas no navegador. Carregar um PDF de conferência já gerado recupera as marcações dele.
 

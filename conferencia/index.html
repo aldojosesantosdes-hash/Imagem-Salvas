@@ -82,6 +82,13 @@
   .msg.info { background:var(--soft); }
   .hidden { display:none !important; }
   .muted { color:var(--muted); font-size:.82rem; }
+  dialog#dlgRelease { width:min(640px, calc(100vw - 24px)); max-height:calc(100dvh - 24px); border:1px solid var(--line); border-radius:14px; padding:14px; background:var(--card); color:var(--fg); }
+  dialog#dlgRelease::backdrop { background:rgba(10,14,22,.55); }
+  .dlg-head { display:flex; justify-content:space-between; align-items:center; }
+  .dlg-head h2 { font-size:1rem; margin:0; }
+  .dlg-head button { background:none; font-size:1.1rem; padding:4px 8px; }
+  #relTexto { width:100%; height:min(56dvh, 520px); font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--fg); resize:vertical; }
+  .dlg-acts { margin-top:10px; } .dlg-acts .primary { flex:1; }
   details summary { cursor:pointer; font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
 </style>
 </head>
@@ -153,9 +160,24 @@
 <div id="foot" class="foot hidden">
   <div class="in">
     <button id="limpar" type="button">Nova</button>
-    <button id="gerar" class="primary" type="button">Gerar PDF da conferência</button>
+    <button id="release" type="button">Release</button>
+    <button id="gerar" class="primary" type="button">Gerar PDF</button>
   </div>
 </div>
+
+<dialog id="dlgRelease" aria-labelledby="dlgTitulo">
+  <div class="dlg-head">
+    <h2 id="dlgTitulo">Release da escala</h2>
+    <button id="relFechar" type="button" aria-label="Fechar">✕</button>
+  </div>
+  <p class="muted">Gerado com as seções selecionadas. Pode editar o texto antes de enviar. Substituições registradas como "Substituído por …" já entram com o nome do substituto.</p>
+  <textarea id="relTexto" spellcheck="false"></textarea>
+  <div class="row dlg-acts">
+    <button id="relCopiar" class="primary" type="button">Copiar</button>
+    <button id="relWhats" type="button">Enviar no WhatsApp</button>
+    <button id="relBaixar" type="button">Baixar .txt</button>
+  </div>
+</dialog>
 
 <script src="vendor/pdf.min.js"></script>
 <script src="vendor/pdf-lib.min.js"></script>

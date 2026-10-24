@@ -1,5 +1,6 @@
-import { linhasDeItens, interpretarEscala, sufixoComum, efetivo, resumo } from './parser.js';
+import { linhasDeItens, interpretarEscala, sufixoComum, efetivo, resumo, slug } from './parser.js';
 import { gerarPdf, lerMarcacoes } from './gerar-pdf.js';
+import { gerarRelease } from './release.js';
 
 const CHAVE = 'conferencia-presenca-v1';
 const $ = (id) => document.getElementById(id);
@@ -250,16 +251,55 @@ $('limpar').addEventListener('click', () => {
   renderTudo();
 });
 
+// Seções selecionadas com as marcações da conferência aplicadas a cada policial.
+function secoesComMarcas(lista) {
+  return st.sel.map((si) => ({
+    ...st.escala.secoes[si],
+    policiais: lista.filter((p) => p.secao === si).map((p) => ({ ...p, ...(st.marcas[p.chave] || {}) })),
+  }));
+}
+
+function baixar(conteudo, nome, tipo) {
+  const url = URL.createObjectURL(new Blob([conteudo], { type: tipo }));
+  const a = Object.assign(document.createElement('a'), { href: url, download: nome });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+
+$('release').addEventListener('click', () => {
+  const lista = selecionados();
+  if (!lista.length) { aviso('Selecione ao menos uma seção.', 'err'); return; }
+  $('relTexto').value = gerarRelease({ ...st.meta, comando: st.escala.comando, unidade: st.escala.unidade, secoes: secoesComMarcas(lista) });
+  $('dlgRelease').showModal();
+});
+$('relFechar').addEventListener('click', () => $('dlgRelease').close());
+$('relCopiar').addEventListener('click', async () => {
+  const btn = $('relCopiar');
+  try {
+    await navigator.clipboard.writeText($('relTexto').value);
+  } catch {
+    $('relTexto').select();
+    document.execCommand('copy');
+  }
+  btn.textContent = 'Copiado ✓';
+  setTimeout(() => { btn.textContent = 'Copiar'; }, 1800);
+});
+$('relWhats').addEventListener('click', () => {
+  window.open(`https://wa.me/?text=${encodeURIComponent($('relTexto').value)}`, '_blank', 'noopener');
+});
+$('relBaixar').addEventListener('click', () => {
+  baixar($('relTexto').value, `Release-${slug(st.meta.subtitulo || st.meta.titulo) || 'Escala'}.txt`, 'text/plain;charset=utf-8');
+});
+
 $('gerar').addEventListener('click', async () => {
   const lista = selecionados();
   if (!lista.length) { aviso('Selecione ao menos uma seção.', 'err'); return; }
   const btn = $('gerar');
   btn.disabled = true;
   try {
-    const secoes = st.sel.map((si) => ({
-      ...st.escala.secoes[si],
-      policiais: lista.filter((p) => p.secao === si).map((p) => ({ ...p, ...(st.marcas[p.chave] || {}) })),
-    }));
+    const secoes = secoesComMarcas(lista);
     const datas = [...new Set(secoes.map((s) => s.data))];
     const horarios = [...new Set(secoes.map((s) => `${s.horaInicio} às ${s.horaFim}`))];
     const brasao = await fetch('brasao.png').then((r) => r.arrayBuffer()).catch(() => null);
@@ -275,12 +315,7 @@ $('gerar').addEventListener('click', async () => {
       conferidoEm: st.conferidoEm,
       brasao,
     });
-    const url = URL.createObjectURL(new Blob([bytes], { type: 'application/pdf' }));
-    const a = Object.assign(document.createElement('a'), { href: url, download: nome });
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(() => URL.revokeObjectURL(url), 60000);
+    baixar(bytes, nome, 'application/pdf');
     const r = resumo(lista, st.marcas);
     aviso(`PDF "${nome}" gerado: ${r.presentes} presentes, ${r.faltas} faltas, ${r.pendentes} não conferidos.`);
   } catch (e) {
