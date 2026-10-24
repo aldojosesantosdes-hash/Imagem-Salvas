@@ -5,7 +5,7 @@
   "type": "module",
   "description": "Protótipo de detecção de vivacidade (liveness) no navegador, com desafios ativos aleatórios.",
   "scripts": {
-    "test": "node --test test/logic.test.js",
+    "test": "node --test test/logic.test.js test/conferencia.test.js",
     "start": "python3 -m http.server 8080"
   }
 }

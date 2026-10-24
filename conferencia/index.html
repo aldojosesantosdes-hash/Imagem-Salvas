@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#213a6b">
+<title>Conferência de Presença</title>
+<link rel="icon" href="brasao.png">
+<style>
+  :root {
+    --bg:#f4f6f9; --card:#fff; --fg:#14171c; --muted:#5d6672; --line:#dde2e8;
+    --navy:#213a6b; --navy-fg:#fff; --soft:#e8edf5;
+    --ok:#0f7a52; --ok-bg:#e3f4ec; --bad:#b0261c; --bad-bg:#fbe7e5; --warn:#8a5a00;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg:#0e1117; --card:#171b22; --fg:#e8ebef; --muted:#9aa4b0; --line:#2a313b;
+      --navy:#3b5ea6; --navy-fg:#fff; --soft:#1f2632;
+      --ok:#43c58e; --ok-bg:#12291f; --bad:#ff8a7e; --bad-bg:#2e1614; --warn:#e8b75a;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg:#0e1117; --card:#171b22; --fg:#e8ebef; --muted:#9aa4b0; --line:#2a313b;
+    --navy:#3b5ea6; --navy-fg:#fff; --soft:#1f2632;
+    --ok:#43c58e; --ok-bg:#12291f; --bad:#ff8a7e; --bad-bg:#2e1614; --warn:#e8b75a;
+  }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; -webkit-tap-highlight-color:transparent; }
+  header.top { background:var(--navy); color:var(--navy-fg); padding:14px 16px; display:flex; gap:12px; align-items:center; }
+  header.top img { width:40px; height:auto; background:#fff; border-radius:50%; padding:2px; }
+  header.top h1 { font-size:1.05rem; margin:0; letter-spacing:.02em; }
+  header.top p { margin:0; font-size:.78rem; opacity:.85; }
+  main { max-width:760px; margin:0 auto; padding:16px 16px 120px; }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px; }
+  .card h2 { font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:0 0 10px; }
+  .drop { display:block; margin-bottom:14px; border:2px dashed var(--line); border-radius:12px; padding:28px 16px; text-align:center; cursor:pointer; background:var(--card); }
+  .drop.over { border-color:var(--navy); background:var(--soft); }
+  .drop strong { display:block; font-size:1.05rem; margin-bottom:4px; }
+  .drop span { color:var(--muted); font-size:.88rem; }
+  label.f { display:block; font-size:.78rem; color:var(--muted); margin:8px 0 3px; }
+  input[type=text], input[type=search] { width:100%; font:inherit; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--fg); }
+  .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:0 12px; }
+  @media (max-width:560px) { .grid2 { grid-template-columns:1fr; } }
+  button { font:inherit; border:0; border-radius:8px; padding:9px 14px; cursor:pointer; background:var(--soft); color:var(--fg); }
+  button.primary { background:var(--navy); color:var(--navy-fg); font-weight:600; }
+  button.link { background:none; padding:4px 0; color:var(--navy); text-decoration:underline; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
+  .secs label { display:flex; gap:10px; align-items:flex-start; padding:7px 0; border-top:1px solid var(--line); font-size:.86rem; cursor:pointer; }
+  .secs label:first-of-type { border-top:0; }
+  .secs input { margin-top:3px; width:18px; height:18px; flex:none; }
+  .secs small { color:var(--muted); display:block; }
+  .summary { position:sticky; top:0; z-index:5; background:var(--bg); padding:8px 0 10px; }
+  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
+  .stat { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px 10px; }
+  .stat b { display:block; font-size:1.35rem; font-variant-numeric:tabular-nums; }
+  .stat span { font-size:.72rem; color:var(--muted); }
+  .stat.ok b { color:var(--ok); } .stat.bad b { color:var(--bad); }
+  .bar { height:5px; background:var(--line); border-radius:3px; overflow:hidden; margin-top:8px; display:flex; }
+  .bar i { display:block; height:100%; }
+  .group-title { background:var(--navy); color:var(--navy-fg); font-weight:600; font-size:.8rem; padding:9px 12px; border-radius:10px 10px 0 0; margin-top:16px; }
+  .group-title small { display:block; font-weight:400; opacity:.85; }
+  .people { background:var(--card); border:1px solid var(--line); border-top:0; border-radius:0 0 10px 10px; }
+  .p { padding:10px 12px; border-top:1px solid var(--line); }
+  .p:first-child { border-top:0; }
+  .p .who { display:flex; justify-content:space-between; gap:10px; align-items:center; }
+  .p .name { font-weight:500; font-size:.92rem; }
+  .p .name.cmd { font-weight:700; }
+  .p .meta { color:var(--muted); font-size:.78rem; }
+  .p .acts { display:flex; gap:6px; flex:none; }
+  .p .acts button { min-width:44px; min-height:40px; padding:6px 10px; font-weight:700; border:1px solid var(--line); background:var(--card); }
+  .p[data-st=P] { background:var(--ok-bg); } .p[data-st=F] { background:var(--bad-bg); }
+  .p[data-st=P] .acts .bP { background:var(--ok); color:#fff; border-color:var(--ok); }
+  .p[data-st=F] .acts .bF { background:var(--bad); color:#fff; border-color:var(--bad); }
+  .p .obs { margin-top:8px; padding:7px 9px; font-size:.86rem; }
+  .p .chips { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
+  .p .chips button { font-size:.74rem; padding:4px 9px; border-radius:20px; }
+  .foot { position:fixed; left:0; right:0; bottom:0; background:var(--card); border-top:1px solid var(--line); padding:10px 16px calc(10px + env(safe-area-inset-bottom)); z-index:10; }
+  .foot .in { max-width:760px; margin:0 auto; display:flex; gap:8px; }
+  .foot .primary { flex:1; padding:13px; }
+  .msg { padding:10px 12px; border-radius:8px; margin:0 0 14px; font-size:.88rem; }
+  .msg.err { background:var(--bad-bg); color:var(--bad); }
+  .msg.info { background:var(--soft); }
+  .hidden { display:none !important; }
+  .muted { color:var(--muted); font-size:.82rem; }
+  details summary { cursor:pointer; font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+</style>
+</head>
+<body>
+<header class="top">
+  <img src="brasao.png" alt="">
+  <div>
+    <h1>Conferência Digital de Presença</h1>
+    <p id="hdrSub">Carregue a escala em PDF para começar</p>
+  </div>
+</header>
+
+<main>
+  <div id="msg" class="msg hidden" role="status"></div>
+
+  <label id="drop" class="drop">
+    <input id="file" type="file" accept="application/pdf,.pdf" hidden>
+    <strong>Carregar escala (PDF)</strong>
+    <span>Escala do SISGESPOL ou uma conferência já gerada (as marcações são recuperadas).</span>
+  </label>
+
+  <section id="setup" class="hidden">
+    <div class="card">
+      <details id="detDados" open>
+        <summary>Dados do documento</summary>
+        <label class="f" for="titulo">Operação</label>
+        <input id="titulo" type="text">
+        <label class="f" for="subtitulo">Posto / portal (subtítulo)</label>
+        <input id="subtitulo" type="text" placeholder="Ex.: PORTAL ALFREDO DE BRITO / BECO DO MOTA">
+        <div class="grid2">
+          <div><label class="f" for="responsavel">Responsável</label><input id="responsavel" type="text"></div>
+          <div><label class="f" for="emitente">Conferido por (aparece no rodapé)</label><input id="emitente" type="text"></div>
+        </div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2>Seções a conferir</h2>
+      <div class="row">
+        <input id="filtro" type="search" placeholder="Filtrar por termo (ex.: ALFREDO DE BRITO)" style="flex:1;min-width:200px">
+        <button id="aplicarFiltro" type="button">Selecionar</button>
+      </div>
+      <div class="row" style="margin-top:4px">
+        <button class="link" id="selTodas" type="button">Todas</button>
+        <button class="link" id="selNenhuma" type="button">Nenhuma</button>
+      </div>
+      <div id="secs" class="secs"></div>
+    </div>
+  </section>
+
+  <section id="conf" class="hidden">
+    <div class="summary">
+      <div class="stats">
+        <div class="stat"><b id="sTotal">0</b><span>Efetivo</span></div>
+        <div class="stat ok"><b id="sP">0</b><span>Presentes</span></div>
+        <div class="stat bad"><b id="sF">0</b><span>Faltas</span></div>
+        <div class="stat"><b id="sN">0</b><span>Não conferidos</span></div>
+      </div>
+      <div class="bar"><i id="barP" style="background:var(--ok)"></i><i id="barF" style="background:var(--bad)"></i></div>
+      <div class="row" style="margin-top:10px">
+        <input id="busca" type="search" placeholder="Buscar nome ou matrícula" style="flex:1;min-width:180px">
+        <button id="todosP" type="button">Todos presentes</button>
+      </div>
+    </div>
+    <div id="lista"></div>
+  </section>
+</main>
+
+<div id="foot" class="foot hidden">
+  <div class="in">
+    <button id="limpar" type="button">Nova</button>
+    <button id="gerar" class="primary" type="button">Gerar PDF da conferência</button>
+  </div>
+</div>
+
+<script src="vendor/pdf.min.js"></script>
+<script src="vendor/pdf-lib.min.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
