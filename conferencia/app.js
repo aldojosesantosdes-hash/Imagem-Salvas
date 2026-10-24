@@ -268,13 +268,61 @@ function baixar(conteudo, nome, tipo) {
   setTimeout(() => URL.revokeObjectURL(url), 60000);
 }
 
-$('release').addEventListener('click', () => {
+// ---------- Release ----------
+const CHAVE_GUERRA = 'conferencia-guerra-v1';
+let baseGuerra = null; // { sal, nomes: { hash(matrícula): NOME } } — sem nomes completos nem matrículas
+const guerraPorMatricula = {};
+function guerraLocal() {
+  try { return JSON.parse(localStorage.getItem(CHAVE_GUERRA)) || {}; } catch { return {}; }
+}
+async function hashMatricula(m) {
+  const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(baseGuerra.sal + m));
+  return [...new Uint8Array(buf)].map((b) => b.toString(16).padStart(2, '0')).join('').slice(0, 16);
+}
+async function prepararGuerra(lista) {
+  if (!baseGuerra) baseGuerra = await fetch('nomes-guerra.json').then((r) => r.json()).catch(() => ({ sal: '', nomes: {} }));
+  if (!crypto.subtle) return;
+  for (const p of lista) {
+    if (p.matricula && !(p.matricula in guerraPorMatricula)) guerraPorMatricula[p.matricula] = baseGuerra.nomes[await hashMatricula(p.matricula)] || null;
+  }
+}
+function nomeDeGuerra(p) {
+  const local = guerraLocal();
+  if (p.matricula) return local[p.matricula] || guerraPorMatricula[p.matricula] || null;
+  // Substituto digitado por nome completo: procura a matrícula na escala carregada.
+  const achado = st.escala.secoes.flatMap((s) => s.policiais).find((q) => q.nome === p.nome);
+  return achado ? local[achado.matricula] || guerraPorMatricula[achado.matricula] || null : (local[p.nome] || null);
+}
+function montarRelease() {
+  const { texto, faltando } = gerarRelease(
+    { ...st.meta, comando: st.escala.comando, unidade: st.escala.unidade, secoes: secoesComMarcas(selecionados()) },
+    { guerra: nomeDeGuerra, vtr: st.meta.vtr },
+  );
+  $('relTexto').value = texto;
+  const box = $('relFaltando');
+  box.classList.toggle('hidden', !faltando.length);
+  box.innerHTML = faltando.length ? `<b>Sem nome de guerra cadastrado (${faltando.length}) — informe para sair no padrão:</b>`
+    + faltando.map((f) => `<label><span>${esc(f.nome)}</span><input type="text" data-guerra="${esc(f.matricula || f.nome)}" placeholder="Nome de guerra"></label>`).join('') : '';
+}
+
+$('release').addEventListener('click', async () => {
   const lista = selecionados();
   if (!lista.length) { aviso('Selecione ao menos uma seção.', 'err'); return; }
-  $('relTexto').value = gerarRelease({ ...st.meta, comando: st.escala.comando, unidade: st.escala.unidade, secoes: secoesComMarcas(lista) });
+  await prepararGuerra(st.escala.secoes.flatMap((s) => s.policiais));
+  $('relVtr').value = st.meta.vtr || '';
+  montarRelease();
   $('dlgRelease').showModal();
 });
 $('relFechar').addEventListener('click', () => $('dlgRelease').close());
+$('relVtr').addEventListener('change', () => { st.meta.vtr = $('relVtr').value.trim(); salvar(); montarRelease(); });
+$('relFaltando').addEventListener('change', (e) => {
+  const k = e.target.dataset.guerra;
+  if (!k || !e.target.value.trim()) return;
+  const local = guerraLocal();
+  local[k] = e.target.value.trim().toUpperCase();
+  try { localStorage.setItem(CHAVE_GUERRA, JSON.stringify(local)); } catch { /* armazenamento indisponível */ }
+  montarRelease();
+});
 $('relCopiar').addEventListener('click', async () => {
   const btn = $('relCopiar');
   try {

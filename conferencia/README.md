@@ -18,31 +18,44 @@ Aplicação web (estática, funciona offline depois de aberta) que lê a **escal
 4. Para cada policial: **P** (presente) ou **F** (falta); tocar de novo desmarca. Use a observação para atraso, substituição ou dispensa.
 5. **Gerar PDF** (conferência preenchível) e/ou **Release** (texto no padrão de WhatsApp).
 
-## Release
+## Release (extrato da operação)
 
-Texto pronto para o grupo, montado com as seções selecionadas:
+Texto pronto para o WhatsApp, montado com as seções selecionadas e o resultado da conferência:
 
 ```
-*CPRC-BTS   18ºBPM*
+*POLÍCIA MILITAR DA BAHIA*
+*COPPM / CPRC-BTS*
+*18° BPM*
 
-*ELEIÇÃO 2026*
-_04/10/2026 · 07h00 às 13h00_
+*Operação Eleição*
 
-Comandante do Setor: CAP PM ...
-Adjunto: TEN PM ...
+*Extrato da Operação Eleição/2026*
 
-*Setor 3*
-Posto 01 - *Colégio Estadual Ursula Catharino*
-SGT PM ... E SD PM ...
+*Data*: 04/10/2026  (domingo)
+*Horário:* 12h às 18h
+
+Coordenador: Ten PM *Marco Antonio*
+Motorista: SD PM *Jorge*
+Vtr: 8.2815
+
+*1 - Bahia Brits Club (Clube Inglês)*
+SD PM *Bispo*
+SD PM *Teixeira*
+
+*RESUMO:*
+Efetivo previsto: 18
+Efetivo ativo: 18
+Faltas: 00
+Atrasos: 00
+
+*PMBA, uma Força a serviço do cidadão!*
 ```
 
-- Seções de coordenação/comando/supervisão viram linhas `Função: Nome`; as demais viram postos numerados.
-- O local do posto sai sem o prefixo do setor e da modalidade (`SETOR 3 - PO A PÉ - `).
-- Manhã e tarde selecionadas juntas viram blocos separados por turno.
-- Observação `Substituído por FULANO` na conferência faz o release trazer o substituto.
-- O texto pode ser editado antes de copiar, enviar pelo WhatsApp ou baixar em `.txt`.
-
-As marcações ficam salvas no navegador. Carregar um PDF de conferência já gerado recupera as marcações dele.
+- **Nome de guerra**: lido de `nomes-guerra.json` (opcional, não versionado: `{ "sal": "...", "nomes": { "<sha256(sal+matrícula) 16 hex>": "NOME" } }`). Quem não estiver na base aparece numa lista dentro da janela do release para ser informado; o que for digitado fica salvo no aparelho.
+- **Coordenação**: seções de coordenação/comando/supervisão viram `Função: Posto *Nome*` (Comandante e Coordenador saem como "Coordenador"). As demais viram postos numerados.
+- **Conferência**: falta sem substituto sai com "(falta)"; "Substituído por FULANO" coloca o substituto; o resumo conta faltas, atrasos (observação com "atraso") e não conferidos.
+- **Vtr**: campo opcional na janela do release.
+- Manhã e tarde (ou setores diferentes) selecionados juntos viram blocos com cabeçalho próprio.
 
 ## O PDF gerado
 

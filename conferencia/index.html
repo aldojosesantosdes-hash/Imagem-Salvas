@@ -88,6 +88,11 @@
   .dlg-head h2 { font-size:1rem; margin:0; }
   .dlg-head button { background:none; font-size:1.1rem; padding:4px 8px; }
   #relTexto { width:100%; height:min(56dvh, 520px); font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--fg); resize:vertical; }
+  .faltando { margin:10px 0; padding:10px; border-radius:8px; background:var(--soft); font-size:.84rem; }
+  .faltando b { display:block; margin-bottom:6px; }
+  .faltando label { display:grid; grid-template-columns:1fr 130px; gap:8px; align-items:center; margin-top:6px; }
+  .faltando input { padding:6px 8px; }
+  #relTexto { margin-top:10px; }
   .dlg-acts { margin-top:10px; } .dlg-acts .primary { flex:1; }
   details summary { cursor:pointer; font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
 </style>
@@ -167,11 +172,16 @@
 
 <dialog id="dlgRelease" aria-labelledby="dlgTitulo">
   <div class="dlg-head">
-    <h2 id="dlgTitulo">Release da escala</h2>
+    <h2 id="dlgTitulo">Release · Extrato da operação</h2>
     <button id="relFechar" type="button" aria-label="Fechar">✕</button>
   </div>
-  <p class="muted">Gerado com as seções selecionadas. Pode editar o texto antes de enviar. Substituições registradas como "Substituído por …" já entram com o nome do substituto.</p>
+  <div class="row">
+    <label class="f" for="relVtr" style="margin:0">Vtr</label>
+    <input id="relVtr" type="text" placeholder="Ex.: 8.2815" style="flex:1;min-width:120px">
+  </div>
+  <div id="relFaltando" class="faltando hidden"></div>
   <textarea id="relTexto" spellcheck="false"></textarea>
+  <p class="muted" style="margin:6px 0 0">Nome de guerra pela base do 18º BPM. Substituições ("Substituído por …") entram com o substituto. Alterar Vtr ou nomes refaz o texto.</p>
   <div class="row dlg-acts">
     <button id="relCopiar" class="primary" type="button">Copiar</button>
     <button id="relWhats" type="button">Enviar no WhatsApp</button>
