@@ -3,189 +3,369 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#213a6b">
+<meta name="theme-color" content="#13264a">
+<meta name="description" content="Conferência de presença do efetivo a partir da escala do SISGESPOL, com PDF e extrato para o WhatsApp.">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Conferência">
 <title>Conferência de Presença</title>
-<link rel="icon" href="brasao.png">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="preload" href="fonts/inter-Regular.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="fonts/inter-SemiBold.woff2" as="font" type="font/woff2" crossorigin>
 <style>
+  @font-face { font-family: Inter; font-weight: 400; font-display: swap; src: url(fonts/inter-Regular.woff2) format("woff2"); }
+  @font-face { font-family: Inter; font-weight: 500; font-display: swap; src: url(fonts/inter-Medium.woff2) format("woff2"); }
+  @font-face { font-family: Inter; font-weight: 600; font-display: swap; src: url(fonts/inter-SemiBold.woff2) format("woff2"); }
+  @font-face { font-family: Inter; font-weight: 700; font-display: swap; src: url(fonts/inter-Bold.woff2) format("woff2"); }
+
   :root {
-    --bg:#f4f6f9; --card:#fff; --fg:#14171c; --muted:#5d6672; --line:#dde2e8;
-    --navy:#213a6b; --navy-fg:#fff; --soft:#e8edf5;
-    --ok:#0f7a52; --ok-bg:#e3f4ec; --bad:#b0261c; --bad-bg:#fbe7e5; --warn:#8a5a00;
+    --bg:#f2f4f8; --card:#ffffff; --raise:#f7f8fb; --ink:#0e1626; --muted:#5d6779; --faint:#8a93a3; --line:#e2e6ee;
+    --navy:#13264a; --navy-2:#1d3768; --navy-ink:#ffffff; --gold:#c9a24a; --gold-ink:#7a5c14; --gold-soft:#f6efdc;
+    --ok:#12805c; --ok-soft:#e4f4ec; --bad:#b4232c; --bad-soft:#fbe9ea; --warn:#9a6700;
+    --focus:0 0 0 3px rgba(29,55,104,.28);
+    --shadow:0 1px 2px rgba(14,22,38,.05), 0 4px 16px rgba(14,22,38,.06);
+    --shadow-lg:0 12px 40px rgba(14,22,38,.18);
+    --r:14px;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
-      --bg:#0e1117; --card:#171b22; --fg:#e8ebef; --muted:#9aa4b0; --line:#2a313b;
-      --navy:#3b5ea6; --navy-fg:#fff; --soft:#1f2632;
-      --ok:#43c58e; --ok-bg:#12291f; --bad:#ff8a7e; --bad-bg:#2e1614; --warn:#e8b75a;
+      --bg:#0b1020; --card:#131a2b; --raise:#182136; --ink:#e9edf4; --muted:#a0aabb; --faint:#7a8497; --line:#253049;
+      --navy:#0f1d3b; --navy-2:#2b4a86; --gold:#d6b25e; --gold-ink:#e6c77d; --gold-soft:#2a2414;
+      --ok:#3fc48f; --ok-soft:#10291f; --bad:#ff8a84; --bad-soft:#2f1517; --warn:#e8b75a;
+      --focus:0 0 0 3px rgba(214,178,94,.35);
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.25);
     }
   }
   :root[data-theme="dark"] {
-    --bg:#0e1117; --card:#171b22; --fg:#e8ebef; --muted:#9aa4b0; --line:#2a313b;
-    --navy:#3b5ea6; --navy-fg:#fff; --soft:#1f2632;
-    --ok:#43c58e; --ok-bg:#12291f; --bad:#ff8a7e; --bad-bg:#2e1614; --warn:#e8b75a;
+    --bg:#0b1020; --card:#131a2b; --raise:#182136; --ink:#e9edf4; --muted:#a0aabb; --faint:#7a8497; --line:#253049;
+    --navy:#0f1d3b; --navy-2:#2b4a86; --gold:#d6b25e; --gold-ink:#e6c77d; --gold-soft:#2a2414;
+    --ok:#3fc48f; --ok-soft:#10291f; --bad:#ff8a84; --bad-soft:#2f1517; --warn:#e8b75a;
+    --focus:0 0 0 3px rgba(214,178,94,.35);
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 20px rgba(0,0,0,.25);
   }
+
   * { box-sizing:border-box; }
-  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif; -webkit-tap-highlight-color:transparent; }
-  header.top { background:var(--navy); color:var(--navy-fg); padding:14px 16px; display:flex; gap:12px; align-items:center; }
-  header.top img { width:40px; height:auto; background:#fff; border-radius:50%; padding:2px; }
-  header.top h1 { font-size:1.05rem; margin:0; letter-spacing:.02em; }
-  header.top p { margin:0; font-size:.78rem; opacity:.85; }
-  main { max-width:760px; margin:0 auto; padding:16px 16px 120px; }
-  .card { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px; margin-bottom:14px; }
-  .card h2 { font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:0 0 10px; }
-  .drop { display:block; margin-bottom:14px; border:2px dashed var(--line); border-radius:12px; padding:28px 16px; text-align:center; cursor:pointer; background:var(--card); }
-  .drop.over { border-color:var(--navy); background:var(--soft); }
-  .drop strong { display:block; font-size:1.05rem; margin-bottom:4px; }
-  .drop span { color:var(--muted); font-size:.88rem; }
-  label.f { display:block; font-size:.78rem; color:var(--muted); margin:8px 0 3px; }
-  input[type=text], input[type=search] { width:100%; font:inherit; padding:9px 10px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--fg); }
+  html { -webkit-text-size-adjust:100%; }
+  body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.45 Inter, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    font-feature-settings:"cv11","ss01"; -webkit-font-smoothing:antialiased; -webkit-tap-highlight-color:transparent; }
+  button, input { font:inherit; color:inherit; }
+  button { cursor:pointer; border:0; background:none; }
+  :focus-visible { outline:none; box-shadow:var(--focus); }
+  svg.i { width:20px; height:20px; flex:none; stroke:currentColor; fill:none; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+  .hidden { display:none !important; }
+  .num { font-variant-numeric:tabular-nums; }
+
+  /* ---------- barra superior ---------- */
+  .appbar { position:relative; color:var(--navy-ink); padding:calc(14px + env(safe-area-inset-top)) 16px 18px;
+    background:radial-gradient(140% 120% at 0% 0%, var(--navy-2) 0%, var(--navy) 55%, #0a1730 100%); }
+  .appbar::after { content:""; position:absolute; left:0; right:0; bottom:0; height:2px; background:linear-gradient(90deg, transparent, var(--gold), transparent); opacity:.7; }
+  .appbar .in { max-width:760px; margin:0 auto; display:flex; align-items:center; gap:12px; }
+  .crest { width:42px; height:42px; border-radius:50%; background:#fff; padding:3px; box-shadow:0 0 0 2px rgba(201,162,74,.55); }
+  .ab-txt { flex:1; min-width:0; }
+  .ab-k { display:block; font-size:.66rem; font-weight:600; letter-spacing:.14em; color:var(--gold); text-transform:uppercase; }
+  .ab-txt h1 { margin:1px 0 0; font-size:1.02rem; font-weight:600; letter-spacing:-.005em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .ab-txt p { margin:1px 0 0; font-size:.78rem; color:#c3cde0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .icon-btn { width:42px; height:42px; display:grid; place-items:center; border-radius:12px; color:#fff; background:rgba(255,255,255,.08); }
+  .icon-btn:active { background:rgba(255,255,255,.16); }
+
+  main { max-width:760px; margin:0 auto; padding:16px 16px calc(112px + env(safe-area-inset-bottom)); }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:var(--r); box-shadow:var(--shadow); }
+
+  /* ---------- tela inicial ---------- */
+  .hero { padding:22px 18px 18px; }
+  .hero h2 { font-size:1.45rem; line-height:1.15; letter-spacing:-.02em; margin:0 0 8px; font-weight:700; }
+  .hero > p { margin:0 0 18px; color:var(--muted); }
+  .drop { display:flex; align-items:center; gap:14px; padding:16px; border-radius:var(--r); cursor:pointer; color:#fff;
+    background:linear-gradient(135deg, var(--navy-2), var(--navy)); box-shadow:0 8px 24px rgba(19,38,74,.28); transition:transform .15s; }
+  .drop:active { transform:scale(.985); }
+  .drop.over { outline:2px dashed var(--gold); outline-offset:3px; }
+  .drop .ic { width:46px; height:46px; border-radius:12px; display:grid; place-items:center; background:rgba(255,255,255,.12); }
+  .drop .ic svg { width:24px; height:24px; }
+  .drop strong { display:block; font-size:1.02rem; font-weight:600; }
+  .drop span { display:block; font-size:.82rem; color:#c3cde0; }
+  .how { list-style:none; margin:20px 0 0; padding:0; display:grid; gap:12px; }
+  .how li { display:flex; gap:12px; align-items:flex-start; }
+  .how b { flex:none; width:28px; height:28px; border-radius:50%; display:grid; place-items:center; font-size:.8rem; background:var(--gold-soft); color:var(--gold-ink); }
+  .how div { font-size:.9rem; color:var(--muted); } .how div strong { color:var(--ink); font-weight:600; display:block; }
+  .privacy { display:flex; gap:8px; align-items:center; margin:18px 0 0; padding-top:14px; border-top:1px solid var(--line); font-size:.8rem; color:var(--muted); }
+  .privacy svg { width:16px; height:16px; color:var(--ok); }
+
+  /* ---------- equipes ---------- */
+  .sec-card { padding:14px 14px 10px; margin-bottom:14px; }
+  .card-h { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+  .card-h h2 { margin:0; font-size:.72rem; font-weight:600; letter-spacing:.12em; text-transform:uppercase; color:var(--muted); flex:1; }
+  .link { color:var(--navy-2); font-weight:600; font-size:.84rem; padding:4px 2px; }
+  :root[data-theme="dark"] .link { color:var(--gold); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .link { color:var(--gold); } }
+  .chips { display:flex; gap:8px; overflow-x:auto; padding:2px 2px 8px; margin:0 -2px; scrollbar-width:none; }
+  .chips::-webkit-scrollbar { display:none; }
+  .chip { flex:none; padding:8px 13px; border-radius:999px; border:1px solid var(--line); background:var(--raise); font-size:.84rem; font-weight:500; white-space:nowrap; }
+  .chip small { color:var(--faint); font-weight:500; margin-left:4px; }
+  .chip[aria-pressed="true"] { background:var(--navy); border-color:var(--navy); color:#fff; }
+  .chip[aria-pressed="true"] small { color:#c3cde0; }
+  details.adj { border-top:1px solid var(--line); margin-top:4px; }
+  details.adj summary { list-style:none; display:flex; align-items:center; justify-content:space-between; padding:10px 0 4px; font-size:.84rem; color:var(--muted); cursor:pointer; }
+  details.adj summary::-webkit-details-marker { display:none; }
+  details.adj summary svg { transition:transform .2s; width:18px; height:18px; }
+  details.adj[open] summary svg { transform:rotate(180deg); }
+  .field { width:100%; padding:11px 12px; border:1px solid var(--line); border-radius:10px; background:var(--card); }
+  .field::placeholder { color:var(--faint); }
+  .row { display:flex; gap:8px; align-items:center; }
+  .btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; padding:10px 14px; border-radius:10px; font-weight:600; font-size:.88rem; background:var(--raise); border:1px solid var(--line); }
+  .btn:active { transform:scale(.98); }
+  .btn.primary { background:var(--navy); border-color:var(--navy); color:#fff; }
+  :root[data-theme="dark"] .btn.primary { background:var(--gold); border-color:var(--gold); color:#141005; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .btn.primary { background:var(--gold); border-color:var(--gold); color:#141005; } }
+  .secs label { display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--line); font-size:.86rem; cursor:pointer; }
+  .secs label:first-child { border-top:0; }
+  .secs input { margin-top:2px; width:18px; height:18px; flex:none; accent-color:var(--navy-2); }
+  .secs small { color:var(--faint); display:block; font-size:.76rem; }
+
+  /* ---------- resumo ---------- */
+  .summary { position:sticky; top:0; z-index:5; padding:10px 0 12px; background:linear-gradient(var(--bg) 82%, transparent); }
+  .sum-card { padding:14px; display:grid; grid-template-columns:auto 1fr; gap:14px; align-items:center; }
+  .ring { position:relative; width:76px; height:76px; }
+  .ring svg { width:76px; height:76px; transform:rotate(-90deg); }
+  .ring circle { fill:none; stroke-width:7; }
+  .ring .bgc { stroke:var(--line); }
+  .ring .okc { stroke:var(--ok); stroke-linecap:round; transition:stroke-dasharray .45s cubic-bezier(.2,.8,.2,1); }
+  .ring .badc { stroke:var(--bad); stroke-linecap:round; transition:stroke-dasharray .45s, stroke-dashoffset .45s; }
+  .ring .pct { position:absolute; inset:0; display:grid; place-items:center; text-align:center; font-weight:700; font-size:1.05rem; line-height:1; }
+  .ring .pct small { display:block; font-size:.56rem; font-weight:500; color:var(--faint); margin-top:3px; }
+  .stats { display:grid; grid-template-columns:repeat(4, 1fr); gap:4px; }
+  .stat b { display:block; font-size:1.3rem; font-weight:700; letter-spacing:-.02em; line-height:1.1; }
+  .stat { min-width:0; }
+  .stat span { display:block; font-size:.7rem; color:var(--faint); font-weight:500; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .stat.ok b { color:var(--ok); } .stat.bad b { color:var(--bad); }
+  .bar { display:none; }
+  .tools { grid-column:1 / -1; display:grid; gap:10px; }
+  .seg { display:grid; grid-template-columns:repeat(3, 1fr); background:var(--raise); border:1px solid var(--line); border-radius:11px; padding:3px; }
+  .seg button { padding:7px 4px; border-radius:8px; font-size:.82rem; font-weight:600; color:var(--muted); }
+  .seg button[aria-pressed="true"] { background:var(--card); color:var(--ink); box-shadow:0 1px 3px rgba(14,22,38,.12); }
+  .search { position:relative; flex:1; }
+  .search svg { position:absolute; left:11px; top:50%; transform:translateY(-50%); width:17px; height:17px; color:var(--faint); }
+  .search .field { padding-left:36px; }
+
+  /* ---------- lista ---------- */
+  .group-title { display:flex; justify-content:space-between; gap:10px; align-items:flex-end; margin:18px 4px 8px; }
+  .group-title b { font-size:.78rem; font-weight:600; letter-spacing:.01em; line-height:1.3; display:block; }
+  .group-title small { display:block; font-size:.74rem; color:var(--faint); margin-top:2px; }
+  .group-title .cnt { flex:none; font-size:.74rem; font-weight:600; color:var(--muted); background:var(--raise); border:1px solid var(--line); padding:3px 8px; border-radius:999px; }
+  .people { overflow:hidden; }
+  .p { display:grid; grid-template-columns:40px 1fr auto; gap:4px 12px; align-items:center; padding:12px 12px 12px 14px; border-top:1px solid var(--line); position:relative; transition:background .2s; }
+  .p:first-child { border-top:0; }
+  .p::before { content:""; position:absolute; left:0; top:10px; bottom:10px; width:3px; border-radius:0 3px 3px 0; background:transparent; transition:background .2s; }
+  .p[data-st=P] { background:var(--ok-soft); } .p[data-st=P]::before { background:var(--ok); }
+  .p[data-st=F] { background:var(--bad-soft); } .p[data-st=F]::before { background:var(--bad); }
+  .av { width:40px; height:40px; border-radius:50%; display:grid; place-items:center; font-size:.8rem; font-weight:600; background:var(--raise); color:var(--muted); border:1px solid var(--line); }
+  .p[data-st=P] .av { background:var(--ok); color:#fff; border-color:var(--ok); }
+  .p[data-st=F] .av { background:var(--bad); color:#fff; border-color:var(--bad); }
+  .who { min-width:0; }
+  .name { font-weight:500; font-size:.9rem; line-height:1.25; }
+  .name.cmd { font-weight:700; }
+  .name .tag { display:inline-block; margin-left:6px; font-size:.62rem; font-weight:700; letter-spacing:.08em; color:var(--gold-ink); background:var(--gold-soft); padding:2px 6px; border-radius:6px; vertical-align:2px; }
+  .meta { color:var(--faint); font-size:.76rem; margin-top:2px; }
+  .acts { display:flex; gap:6px; }
+  .acts button { width:46px; height:44px; border-radius:11px; font-weight:700; font-size:.92rem; border:1px solid var(--line); background:var(--card); color:var(--muted); transition:transform .12s, background .15s; }
+  .acts button:active { transform:scale(.92); }
+  .p[data-st=P] .bP { background:var(--ok); border-color:var(--ok); color:#fff; }
+  .p[data-st=F] .bF { background:var(--bad); border-color:var(--bad); color:#fff; }
+  .obsrow { grid-column:2 / -1; }
+  .addobs { font-size:.78rem; color:var(--muted); padding:2px 0; display:inline-flex; gap:4px; align-items:center; }
+  .addobs svg { width:14px; height:14px; }
+  .obsbox { display:none; margin-top:6px; }
+  .p.open .obsbox { display:block; } .p.open .addobs { display:none; }
+  .obs { width:100%; padding:9px 11px; border:1px solid var(--line); border-radius:10px; background:var(--card); font-size:.86rem; }
+  .qchips { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
+  .qchips button { font-size:.74rem; font-weight:500; padding:5px 10px; border-radius:999px; background:var(--raise); border:1px solid var(--line); color:var(--muted); }
+  .empty { text-align:center; color:var(--faint); padding:28px 12px; font-size:.9rem; }
+
+  /* ---------- barra de ações ---------- */
+  .dock { position:fixed; left:0; right:0; bottom:0; z-index:10; padding:10px 12px calc(10px + env(safe-area-inset-bottom));
+    background:color-mix(in srgb, var(--card) 88%, transparent); backdrop-filter:blur(14px); -webkit-backdrop-filter:blur(14px); border-top:1px solid var(--line); }
+  .dock .in { max-width:760px; margin:0 auto; display:grid; grid-template-columns:auto auto 1fr; gap:8px; }
+  .dock .btn { padding:12px 14px; white-space:nowrap; }
+  .dock .btn.primary { padding:12px 16px; font-size:.95rem; }
+
+  /* ---------- avisos ---------- */
+  .toasts { position:fixed; left:12px; right:12px; bottom:calc(84px + env(safe-area-inset-bottom)); z-index:50; display:grid; gap:8px; justify-items:center; pointer-events:none; }
+  .toast { pointer-events:auto; max-width:560px; width:100%; display:flex; gap:12px; align-items:center; padding:12px 14px; border-radius:12px; color:#fff; font-size:.88rem;
+    background:#16213a; box-shadow:var(--shadow-lg); animation:tin .28s cubic-bezier(.2,.8,.2,1); }
+  .toast.err { background:#7f1d24; }
+  .toast span { flex:1; }
+  .toast button { color:var(--gold); font-weight:700; font-size:.86rem; padding:4px 6px; }
+  .toast.out { animation:tout .22s ease-in forwards; }
+  @keyframes tin { from { opacity:0; transform:translateY(12px) scale(.98); } to { opacity:1; transform:none; } }
+  @keyframes tout { to { opacity:0; transform:translateY(8px); } }
+
+  /* ---------- janelas ---------- */
+  dialog.sheet { width:min(640px, 100vw); max-width:100vw; max-height:92dvh; margin:auto auto 0; border:0; padding:0; border-radius:20px 20px 0 0; background:var(--card); color:var(--ink); box-shadow:var(--shadow-lg); }
+  @media (min-width:700px) { dialog.sheet { margin:auto; border-radius:20px; } }
+  dialog.sheet[open] { animation:sheet .3s cubic-bezier(.2,.8,.2,1); }
+  @keyframes sheet { from { transform:translateY(40px); opacity:0; } to { transform:none; opacity:1; } }
+  dialog.sheet::backdrop { background:rgba(8,12,22,.55); backdrop-filter:blur(2px); }
+  .sh-in { padding:8px 16px calc(16px + env(safe-area-inset-bottom)); display:flex; flex-direction:column; max-height:92dvh; }
+  .grab { width:40px; height:4px; border-radius:4px; background:var(--line); margin:4px auto 10px; }
+  .dlg-head { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .dlg-head h2 { font-size:1.05rem; margin:0; font-weight:700; letter-spacing:-.01em; }
+  .dlg-head .x { width:36px; height:36px; display:grid; place-items:center; border-radius:10px; background:var(--raise); }
+  label.f { display:block; font-size:.74rem; font-weight:600; letter-spacing:.04em; color:var(--muted); margin:12px 0 5px; text-transform:uppercase; }
   .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:0 12px; }
   @media (max-width:560px) { .grid2 { grid-template-columns:1fr; } }
-  button { font:inherit; border:0; border-radius:8px; padding:9px 14px; cursor:pointer; background:var(--soft); color:var(--fg); }
-  button.primary { background:var(--navy); color:var(--navy-fg); font-weight:600; }
-  button.link { background:none; padding:4px 0; color:var(--navy); text-decoration:underline; }
-  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
-  .secs label { display:flex; gap:10px; align-items:flex-start; padding:7px 0; border-top:1px solid var(--line); font-size:.86rem; cursor:pointer; }
-  .secs label:first-of-type { border-top:0; }
-  .secs input { margin-top:3px; width:18px; height:18px; flex:none; }
-  .secs small { color:var(--muted); display:block; }
-  .summary { position:sticky; top:0; z-index:5; background:var(--bg); padding:8px 0 10px; }
-  .stats { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; }
-  .stat { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:8px 10px; }
-  .stat b { display:block; font-size:1.35rem; font-variant-numeric:tabular-nums; }
-  .stat span { font-size:.72rem; color:var(--muted); }
-  .stat.ok b { color:var(--ok); } .stat.bad b { color:var(--bad); }
-  .bar { height:5px; background:var(--line); border-radius:3px; overflow:hidden; margin-top:8px; display:flex; }
-  .bar i { display:block; height:100%; }
-  .group-title { background:var(--navy); color:var(--navy-fg); font-weight:600; font-size:.8rem; padding:9px 12px; border-radius:10px 10px 0 0; margin-top:16px; }
-  .group-title small { display:block; font-weight:400; opacity:.85; }
-  .people { background:var(--card); border:1px solid var(--line); border-top:0; border-radius:0 0 10px 10px; }
-  .p { padding:10px 12px; border-top:1px solid var(--line); }
-  .p:first-child { border-top:0; }
-  .p .who { display:flex; justify-content:space-between; gap:10px; align-items:center; }
-  .p .name { font-weight:500; font-size:.92rem; }
-  .p .name.cmd { font-weight:700; }
-  .p .meta { color:var(--muted); font-size:.78rem; }
-  .p .acts { display:flex; gap:6px; flex:none; }
-  .p .acts button { min-width:44px; min-height:40px; padding:6px 10px; font-weight:700; border:1px solid var(--line); background:var(--card); }
-  .p[data-st=P] { background:var(--ok-bg); } .p[data-st=F] { background:var(--bad-bg); }
-  .p[data-st=P] .acts .bP { background:var(--ok); color:#fff; border-color:var(--ok); }
-  .p[data-st=F] .acts .bF { background:var(--bad); color:#fff; border-color:var(--bad); }
-  .p .obs { margin-top:8px; padding:7px 9px; font-size:.86rem; }
-  .p .chips { display:flex; gap:6px; margin-top:6px; flex-wrap:wrap; }
-  .p .chips button { font-size:.74rem; padding:4px 9px; border-radius:20px; }
-  .foot { position:fixed; left:0; right:0; bottom:0; background:var(--card); border-top:1px solid var(--line); padding:10px 16px calc(10px + env(safe-area-inset-bottom)); z-index:10; }
-  .foot .in { max-width:760px; margin:0 auto; display:flex; gap:8px; }
-  .foot .primary { flex:1; padding:13px; }
-  .msg { padding:10px 12px; border-radius:8px; margin:0 0 14px; font-size:.88rem; }
-  .msg.err { background:var(--bad-bg); color:var(--bad); }
-  .msg.info { background:var(--soft); }
-  .hidden { display:none !important; }
-  .muted { color:var(--muted); font-size:.82rem; }
-  dialog#dlgRelease { width:min(640px, calc(100vw - 24px)); max-height:calc(100dvh - 24px); border:1px solid var(--line); border-radius:14px; padding:14px; background:var(--card); color:var(--fg); }
-  dialog#dlgRelease::backdrop { background:rgba(10,14,22,.55); }
-  .dlg-head { display:flex; justify-content:space-between; align-items:center; }
-  .dlg-head h2 { font-size:1rem; margin:0; }
-  .dlg-head button { background:none; font-size:1.1rem; padding:4px 8px; }
-  #relTexto { width:100%; height:min(56dvh, 520px); font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--fg); resize:vertical; }
-  .faltando { margin:10px 0; padding:10px; border-radius:8px; background:var(--soft); font-size:.84rem; }
-  .faltando b { display:block; margin-bottom:6px; }
+  .faltando { margin:10px 0 0; padding:12px; border-radius:12px; background:var(--gold-soft); font-size:.84rem; }
+  .faltando b { display:block; margin-bottom:4px; color:var(--gold-ink); }
   .faltando label { display:grid; grid-template-columns:1fr 130px; gap:8px; align-items:center; margin-top:6px; }
-  .faltando input { padding:6px 8px; }
-  #relTexto { margin-top:10px; }
-  .dlg-acts { margin-top:10px; } .dlg-acts .primary { flex:1; }
-  details summary { cursor:pointer; font-size:.8rem; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); }
+  .faltando input { padding:7px 9px; border:1px solid var(--line); border-radius:8px; background:var(--card); }
+  #relTexto { flex:1; min-height:240px; width:100%; margin-top:10px; font:12.5px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; padding:12px; border:1px solid var(--line); border-radius:12px; background:var(--raise); color:var(--ink); resize:none; }
+  .note { margin:8px 2px 0; font-size:.76rem; color:var(--faint); }
+  .dlg-acts { display:grid; grid-template-columns:1fr 1fr auto; gap:8px; margin-top:12px; }
+  .wa { background:#1f8f4e !important; border-color:#1f8f4e !important; color:#fff !important; }
+
+  @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation:none !important; transition:none !important; } }
 </style>
 </head>
 <body>
-<header class="top">
-  <img src="brasao.png" alt="">
-  <div>
-    <h1>Conferência Digital de Presença</h1>
-    <p id="hdrSub">Carregue a escala em PDF para começar</p>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></symbol>
+  <symbol id="i-doc" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-chat" viewBox="0 0 24 24"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20l1-4.6A8 8 0 1 1 21 12z"/><path d="M8.5 10.5h7M8.5 13.5h4.5"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></symbol>
+  <symbol id="i-edit" viewBox="0 0 24 24"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></symbol>
+  <symbol id="i-new" viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.3-5.6"/><path d="M4 4v4h4"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+  <symbol id="i-dl" viewBox="0 0 24 24"><path d="M12 4v12M7 11l5 5 5-5M5 20h14"/></symbol>
+</svg>
+
+<header class="appbar">
+  <div class="in">
+    <img class="crest" src="brasao.png" alt="">
+    <div class="ab-txt">
+      <span class="ab-k">18º BPM · Centro Histórico</span>
+      <h1 id="hdrTitulo">Conferência Digital de Presença</h1>
+      <p id="hdrSub">Carregue a escala para começar</p>
+    </div>
+    <button id="btnDados" class="icon-btn hidden" type="button" aria-label="Dados do documento"><svg class="i"><use href="#i-edit"/></svg></button>
   </div>
 </header>
 
 <main>
-  <div id="msg" class="msg hidden" role="status"></div>
+  <input id="file" type="file" accept="application/pdf,.pdf" hidden>
 
-  <label id="drop" class="drop">
-    <input id="file" type="file" accept="application/pdf,.pdf" hidden>
-    <strong>Carregar escala (PDF)</strong>
-    <span>Escala do SISGESPOL (eventos, eleições etc.) ou uma conferência já gerada — as marcações são recuperadas.</span>
-  </label>
+  <section id="vazio" class="card hero">
+    <h2>Confira o efetivo em minutos.</h2>
+    <p>Carregue a escala do SISGESPOL, marque as presenças e gere o PDF e o extrato para o grupo.</p>
+    <label id="drop" class="drop" for="file">
+      <span class="ic"><svg class="i"><use href="#i-up"/></svg></span>
+      <span><strong>Carregar escala</strong><span>PDF do SISGESPOL ou conferência salva</span></span>
+    </label>
+    <ol class="how">
+      <li><b>1</b><div><strong>Escolha a equipe</strong>Setor, turno ou posto, com um toque.</div></li>
+      <li><b>2</b><div><strong>Confira cada policial</strong>Presente, falta, atraso ou substituição.</div></li>
+      <li><b>3</b><div><strong>Exporte</strong>PDF da conferência e extrato pronto para o WhatsApp.</div></li>
+    </ol>
+    <p class="privacy"><svg class="i"><use href="#i-lock"/></svg>Processado no seu aparelho. Nada é enviado a servidor.</p>
+  </section>
 
-  <section id="setup" class="hidden">
-    <div class="card">
-      <details id="detDados" open>
-        <summary>Dados do documento</summary>
-        <label class="f" for="titulo">Operação</label>
-        <input id="titulo" type="text">
-        <label class="f" for="subtitulo">Posto / portal (subtítulo)</label>
-        <input id="subtitulo" type="text" placeholder="Ex.: PORTAL ALFREDO DE BRITO / BECO DO MOTA">
-        <div class="grid2">
-          <div><label class="f" for="responsavel">Responsável</label><input id="responsavel" type="text"></div>
-          <div><label class="f" for="emitente">Conferido por (aparece no rodapé)</label><input id="emitente" type="text"></div>
-        </div>
-      </details>
+  <section id="setup" class="card sec-card hidden">
+    <div class="card-h">
+      <h2>Equipes</h2>
+      <button id="trocar" class="link" type="button">Trocar escala</button>
     </div>
-
-    <div class="card">
-      <h2>Seções a conferir</h2>
-      <div class="row">
-        <input id="filtro" type="search" placeholder="Filtrar por termo (ex.: ALFREDO DE BRITO)" style="flex:1;min-width:200px">
-        <button id="aplicarFiltro" type="button">Selecionar</button>
+    <div id="chips" class="chips" role="group" aria-label="Seleção rápida"></div>
+    <details class="adj" id="detSecs">
+      <summary><span id="selInfo">Ajustar seções</span><svg class="i"><use href="#i-down"/></svg></summary>
+      <div class="row" style="margin:8px 0 4px">
+        <input id="filtro" class="field" type="search" placeholder="Filtrar por termo (ex.: ALFREDO DE BRITO)">
+        <button id="aplicarFiltro" class="btn" type="button">Selecionar</button>
       </div>
-      <div class="row" style="margin-top:4px">
+      <div class="row" style="gap:14px;margin:2px 0 4px">
         <button class="link" id="selTodas" type="button">Todas</button>
         <button class="link" id="selNenhuma" type="button">Nenhuma</button>
       </div>
       <div id="secs" class="secs"></div>
-    </div>
+    </details>
   </section>
 
   <section id="conf" class="hidden">
     <div class="summary">
-      <div class="stats">
-        <div class="stat"><b id="sTotal">0</b><span>Efetivo</span></div>
-        <div class="stat ok"><b id="sP">0</b><span>Presentes</span></div>
-        <div class="stat bad"><b id="sF">0</b><span>Faltas</span></div>
-        <div class="stat"><b id="sN">0</b><span>Não conferidos</span></div>
-      </div>
-      <div class="bar"><i id="barP" style="background:var(--ok)"></i><i id="barF" style="background:var(--bad)"></i></div>
-      <div class="row" style="margin-top:10px">
-        <input id="busca" type="search" placeholder="Buscar nome ou matrícula" style="flex:1;min-width:180px">
-        <button id="todosP" type="button">Todos presentes</button>
+      <div class="card sum-card">
+        <div class="ring" aria-hidden="true">
+          <svg viewBox="0 0 76 76"><circle class="bgc" cx="38" cy="38" r="32"/><circle id="ringOk" class="okc" cx="38" cy="38" r="32" stroke-dasharray="0 999"/><circle id="ringBad" class="badc" cx="38" cy="38" r="32" stroke-dasharray="0 999"/></svg>
+          <div class="pct num"><span><span id="pct">0%</span><small>conferido</small></span></div>
+        </div>
+        <div class="stats num">
+          <div class="stat"><b id="sTotal">0</b><span>Efetivo</span></div>
+          <div class="stat ok"><b id="sP">0</b><span>Presentes</span></div>
+          <div class="stat bad"><b id="sF">0</b><span>Faltas</span></div>
+          <div class="stat"><b id="sN">0</b><span>Restam</span></div>
+        </div>
+        <div class="bar"><i id="barP"></i><i id="barF"></i></div>
+        <div class="tools">
+          <div class="seg" id="vista" role="group" aria-label="Mostrar">
+            <button type="button" data-v="todos" aria-pressed="true">Todos</button>
+            <button type="button" data-v="pend" aria-pressed="false">A conferir</button>
+            <button type="button" data-v="faltas" aria-pressed="false">Faltas</button>
+          </div>
+          <div class="row">
+            <label class="search"><svg class="i"><use href="#i-search"/></svg><input id="busca" class="field" type="search" placeholder="Nome ou matrícula"></label>
+            <button id="todosP" class="btn" type="button"><svg class="i"><use href="#i-check"/></svg>Todos</button>
+          </div>
+        </div>
       </div>
     </div>
     <div id="lista"></div>
   </section>
 </main>
 
-<div id="foot" class="foot hidden">
+<nav id="foot" class="dock hidden" aria-label="Ações">
   <div class="in">
-    <button id="limpar" type="button">Nova</button>
-    <button id="release" type="button">Release</button>
-    <button id="gerar" class="primary" type="button">Gerar PDF</button>
+    <button id="limpar" class="btn" type="button" aria-label="Nova conferência"><svg class="i"><use href="#i-new"/></svg></button>
+    <button id="release" class="btn" type="button"><svg class="i"><use href="#i-chat"/></svg>Extrato</button>
+    <button id="gerar" class="btn primary" type="button"><svg class="i"><use href="#i-doc"/></svg>Gerar PDF</button>
   </div>
-</div>
+</nav>
 
-<dialog id="dlgRelease" aria-labelledby="dlgTitulo">
-  <div class="dlg-head">
-    <h2 id="dlgTitulo">Release · Extrato da operação</h2>
-    <button id="relFechar" type="button" aria-label="Fechar">✕</button>
+<div id="msg" class="toasts" role="status" aria-live="polite"></div>
+
+<dialog id="dlgDados" class="sheet" aria-labelledby="dadosTitulo">
+  <div class="sh-in">
+    <div class="grab"></div>
+    <div class="dlg-head"><h2 id="dadosTitulo">Dados do documento</h2><button class="x" type="button" data-close aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <label class="f" for="titulo">Operação</label>
+    <input id="titulo" class="field" type="text">
+    <label class="f" for="subtitulo">Posto / portal (subtítulo)</label>
+    <input id="subtitulo" class="field" type="text" placeholder="Ex.: PORTAL ALFREDO DE BRITO / BECO DO MOTA">
+    <div class="grid2">
+      <div><label class="f" for="responsavel">Responsável</label><input id="responsavel" class="field" type="text"></div>
+      <div><label class="f" for="emitente">Conferido por</label><input id="emitente" class="field" type="text" placeholder="Aparece no rodapé do PDF"></div>
+    </div>
+    <button class="btn primary" type="button" data-close style="margin-top:16px">Concluir</button>
   </div>
-  <div class="row">
-    <label class="f" for="relVtr" style="margin:0">Vtr</label>
-    <input id="relVtr" type="text" placeholder="Ex.: 8.2815" style="flex:1;min-width:120px">
-  </div>
-  <div id="relFaltando" class="faltando hidden"></div>
-  <textarea id="relTexto" spellcheck="false"></textarea>
-  <p class="muted" style="margin:6px 0 0">Nome de guerra pela base do 18º BPM. Substituições ("Substituído por …") entram com o substituto. Alterar Vtr ou nomes refaz o texto.</p>
-  <div class="row dlg-acts">
-    <button id="relCopiar" class="primary" type="button">Copiar</button>
-    <button id="relWhats" type="button">Enviar no WhatsApp</button>
-    <button id="relBaixar" type="button">Baixar .txt</button>
+</dialog>
+
+<dialog id="dlgRelease" class="sheet" aria-labelledby="dlgTitulo">
+  <div class="sh-in">
+    <div class="grab"></div>
+    <div class="dlg-head"><h2 id="dlgTitulo">Extrato da operação</h2><button id="relFechar" class="x" type="button" aria-label="Fechar"><svg class="i"><use href="#i-x"/></svg></button></div>
+    <div class="row">
+      <label class="f" for="relVtr" style="margin:0">Vtr</label>
+      <input id="relVtr" class="field" type="text" placeholder="Ex.: 8.2815" inputmode="decimal" style="flex:1">
+    </div>
+    <div id="relFaltando" class="faltando hidden"></div>
+    <textarea id="relTexto" spellcheck="false" aria-label="Texto do extrato"></textarea>
+    <p class="note">Nome de guerra pela base do batalhão. "Substituído por …" entra com o substituto. Alterar Vtr ou nomes refaz o texto.</p>
+    <div class="dlg-acts">
+      <button id="relWhats" class="btn wa" type="button"><svg class="i"><use href="#i-chat"/></svg>WhatsApp</button>
+      <button id="relCopiar" class="btn primary" type="button"><svg class="i"><use href="#i-copy"/></svg>Copiar</button>
+      <button id="relBaixar" class="btn" type="button" aria-label="Baixar .txt"><svg class="i"><use href="#i-dl"/></svg></button>
+    </div>
   </div>
 </dialog>
 

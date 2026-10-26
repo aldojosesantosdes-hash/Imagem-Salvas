@@ -2,6 +2,13 @@
 
 Aplicação web (estática, funciona offline depois de aberta) que lê a **escala do SISGESPOL em PDF**, permite conferir presença por policial e gera o **PDF de conferência** no padrão do modelo "Conferência Digital de Presença" (formulário preenchível).
 
+## Experiência
+
+- **Atalhos de equipe**: a escala é agrupada automaticamente por setor e turno (`Setor 1 · 12h–18h`) e por blocos repetidos (`Escolta de Urnas · 14h–20h`); um toque seleciona a equipe.
+- **Conferência**: anel de progresso, filtros Todos / A conferir / Faltas, busca por nome ou matrícula, observação recolhível com atalhos (Atraso, Substituição, Dispensado), vibração ao marcar e **Desfazer** após "Todos".
+- **Instalável e offline** (PWA): "Adicionar à tela inicial" abre como aplicativo; depois do primeiro acesso funciona sem internet (`sw.js`).
+- Tipografia Inter embutida (`fonts/`, licença OFL), modo escuro automático e ícones próprios.
+
 ## PDFs aceitos
 
 | Tipo | Como é reconhecido |
