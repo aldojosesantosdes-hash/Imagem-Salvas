@@ -1,0 +1,402 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Atas de Reunião</title>
+<style>
+  :root { --bg:#f5f6f8; --card:#fff; --fg:#14171a; --muted:#5f6b76; --line:#d9dee3; --accent:#1b3a6b; --ok:#12805c; --bad:#b42318; --warn:#9a6700; }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) { --bg:#0f1216; --card:#171b21; --fg:#eceff2; --muted:#9aa5b0; --line:#2b323a; --accent:#8fb0ea; --ok:#3ccf9a; --bad:#ff7b6b; --warn:#e3b341; } }
+  * { box-sizing:border-box; }
+  body { margin:0; background:var(--bg); color:var(--fg); font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif; }
+  header.top { background:var(--accent); color:#fff; padding:14px 16px; }
+  @media (prefers-color-scheme: dark) { header.top { color:#0f1216; } }
+  header.top h1 { margin:0; font-size:1.15rem; letter-spacing:.02em; }
+  header.top p { margin:2px 0 0; opacity:.85; font-size:.85rem; }
+  main { max-width:880px; margin:0 auto; padding:16px 16px 64px; }
+  section.card { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:16px; margin-bottom:14px; }
+  section.card h2 { margin:0 0 12px; font-size:1rem; display:flex; align-items:center; gap:8px; }
+  section.card h2 .n { background:var(--accent); color:var(--card); border-radius:50%; width:22px; height:22px; display:inline-grid; place-items:center; font-size:.75rem; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:10px; }
+  label { display:block; font-size:.8rem; color:var(--muted); margin-bottom:3px; }
+  input, textarea, select { width:100%; font:inherit; color:var(--fg); background:var(--bg); border:1px solid var(--line); border-radius:6px; padding:8px 10px; }
+  textarea { min-height:70px; resize:vertical; }
+  button { font:inherit; border-radius:6px; border:1px solid var(--line); background:var(--card); color:var(--fg); padding:7px 12px; cursor:pointer; }
+  button.primary { background:var(--accent); color:var(--card); border-color:var(--accent); }
+  button.danger { color:var(--bad); }
+  button:disabled { opacity:.5; cursor:default; }
+  .row { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+  .item { border:1px solid var(--line); border-radius:8px; padding:10px; margin-bottom:8px; }
+  .item .grid { margin-bottom:6px; }
+  .muted { color:var(--muted); font-size:.85rem; }
+  .badge { font-size:.75rem; padding:2px 8px; border-radius:99px; border:1px solid currentColor; }
+  .badge.ok { color:var(--ok); } .badge.pend { color:var(--warn); } .badge.bad { color:var(--bad); }
+  .hash { font-family:ui-monospace,Menlo,Consolas,monospace; font-size:.75rem; word-break:break-all; }
+  #alert { border:1px solid var(--warn); color:var(--warn); border-radius:8px; padding:8px 12px; margin-bottom:14px; }
+  .toolbar { position:sticky; bottom:0; background:var(--card); border-top:1px solid var(--line); padding:10px 16px; display:flex; gap:8px; flex-wrap:wrap; justify-content:center; }
+
+  /* Modal de assinatura */
+  dialog { border:0; border-radius:12px; padding:0; width:min(640px,calc(100vw - 24px)); background:var(--card); color:var(--fg); }
+  dialog::backdrop { background:rgba(0,0,0,.55); }
+  .dlg { padding:16px; }
+  .pad { width:100%; height:200px; border:1px dashed var(--muted); border-radius:8px; background:#fff; touch-action:none; display:block; }
+  .decl { font-size:.85rem; background:var(--bg); border-radius:6px; padding:8px 10px; margin:8px 0; }
+
+  /* Documento impresso */
+  #doc { display:none; }
+  @media print {
+    @page { size:A4; margin:18mm 18mm 20mm; }
+    body { background:#fff; color:#000; font:11pt/1.5 Georgia,"Times New Roman",serif; }
+    header.top, main, .toolbar, dialog { display:none !important; }
+    #doc { display:block; }
+    #doc h1 { text-align:center; font-size:15pt; margin:0; text-transform:uppercase; letter-spacing:.04em; }
+    #doc .org { text-align:center; font-size:10pt; margin-bottom:2px; }
+    #doc .sub { text-align:center; font-size:10pt; margin:2px 0 14px; }
+    #doc h3 { font-size:11pt; text-transform:uppercase; border-bottom:1px solid #000; margin:14px 0 6px; padding-bottom:2px; }
+    #doc table { width:100%; border-collapse:collapse; font-size:10pt; }
+    #doc td, #doc th { border:1px solid #888; padding:4px 6px; text-align:left; vertical-align:top; }
+    #doc p { margin:0 0 6px; text-align:justify; }
+    #doc .sigs { display:grid; grid-template-columns:1fr 1fr; gap:18px 28px; margin-top:12px; }
+    #doc .sig { break-inside:avoid; text-align:center; font-size:9.5pt; }
+    #doc .sig img { height:60px; max-width:100%; object-fit:contain; display:block; margin:0 auto; }
+    #doc .sig .blank { height:60px; }
+    #doc .sig .line { border-top:1px solid #000; padding-top:3px; font-weight:bold; }
+    #doc .sig small { display:block; font-size:7.5pt; color:#333; }
+    #doc .foot { margin-top:18px; font-size:8pt; border-top:1px solid #000; padding-top:6px; color:#333; }
+  }
+</style>
+</head>
+<body>
+<header class="top">
+  <h1>Atas de Reunião com Assinaturas Múltiplas</h1>
+  <p>Redija, colete as assinaturas no próprio aparelho e gere o PDF. Tudo fica no seu navegador.</p>
+</header>
+
+<main>
+  <div id="alert" hidden></div>
+
+  <section class="card">
+    <h2><span class="n">1</span> Identificação</h2>
+    <div class="grid">
+      <div><label for="org">Organização</label><input id="org" data-f="org" placeholder="Ex.: Associação dos Moradores do Ed. Aurora"></div>
+      <div><label for="titulo">Título da ata</label><input id="titulo" data-f="titulo" placeholder="Ata da Reunião Ordinária nº 12/2026"></div>
+      <div><label for="tipo">Natureza</label>
+        <select id="tipo" data-f="tipo"><option>Ordinária</option><option>Extraordinária</option><option>Assembleia Geral</option><option>Reunião de equipe</option><option>Reunião de diretoria</option></select></div>
+      <div><label for="data">Data</label><input id="data" type="date" data-f="data"></div>
+      <div><label for="inicio">Início</label><input id="inicio" type="time" data-f="inicio"></div>
+      <div><label for="fim">Término</label><input id="fim" type="time" data-f="fim"></div>
+      <div><label for="local">Local / plataforma</label><input id="local" data-f="local" placeholder="Sala 3 ou Google Meet"></div>
+      <div><label for="presidente">Presidiu</label><input id="presidente" data-f="presidente"></div>
+      <div><label for="secretario">Secretariou</label><input id="secretario" data-f="secretario"></div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">2</span> Participantes e signatários</h2>
+    <div id="participantes"></div>
+    <button type="button" id="addPart">+ Participante</button>
+    <p class="muted">Marque “Assina” para quem deve assinar. Ausentes aparecem na ata, mas não assinam.</p>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">3</span> Pauta e deliberações</h2>
+    <div id="pautas"></div>
+    <button type="button" id="addPauta">+ Item de pauta</button>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">4</span> Encaminhamentos</h2>
+    <div id="acoes"></div>
+    <button type="button" id="addAcao">+ Encaminhamento</button>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">5</span> Encerramento</h2>
+    <label for="obs">Observações / declarações em ata</label>
+    <textarea id="obs" data-f="obs"></textarea>
+    <label for="encerramento" style="margin-top:8px">Texto de encerramento</label>
+    <textarea id="encerramento" data-f="encerramento"></textarea>
+  </section>
+
+  <section class="card">
+    <h2><span class="n">6</span> Assinaturas</h2>
+    <p class="muted">Ao assinar, a assinatura fica vinculada à impressão digital (SHA-256) do texto da ata. Se o texto mudar depois, as assinaturas são invalidadas e precisam ser refeitas.</p>
+    <p>Impressão digital atual: <span class="hash" id="hashAtual">—</span></p>
+    <div id="assinaturas"></div>
+  </section>
+</main>
+
+<div class="toolbar">
+  <button type="button" id="novo" class="danger">Nova ata</button>
+  <button type="button" id="exportar">Salvar arquivo (.json)</button>
+  <button type="button" id="importarBtn">Abrir arquivo</button>
+  <input type="file" id="importar" accept="application/json,.json" hidden>
+  <button type="button" id="pdf" class="primary">Gerar PDF / Imprimir</button>
+</div>
+
+<dialog id="dlg">
+  <div class="dlg">
+    <h3 style="margin:0 0 4px" id="dlgNome"></h3>
+    <div class="muted" id="dlgCargo"></div>
+    <div class="decl" id="dlgDecl"></div>
+    <canvas class="pad" id="pad"></canvas>
+    <div class="row" style="justify-content:space-between;margin-top:10px">
+      <button type="button" id="limpar">Limpar</button>
+      <div class="row">
+        <button type="button" id="cancelar">Cancelar</button>
+        <button type="button" id="confirmar" class="primary">Confirmar assinatura</button>
+      </div>
+    </div>
+  </div>
+</dialog>
+
+<article id="doc"></article>
+
+<script>
+(() => {
+  const KEY = 'ata-reuniao-v1';
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  const uid = () => Math.random().toString(36).slice(2, 10);
+
+  const vazio = () => ({
+    id: uid(), org:'', titulo:'', tipo:'Ordinária', data:new Date().toISOString().slice(0,10), inicio:'', fim:'', local:'',
+    presidente:'', secretario:'', obs:'',
+    encerramento:'Nada mais havendo a tratar, a reunião foi encerrada, e eu, secretário(a), lavrei a presente ata, que, lida e aprovada, vai assinada pelos presentes.',
+    participantes:[{ id:uid(), nome:'', cargo:'', doc:'', presente:true, assina:true }],
+    pautas:[{ id:uid(), titulo:'', discussao:'', deliberacao:'', votos:'' }],
+    acoes:[], assinaturas:{}
+  });
+
+  let ata;
+  try { ata = JSON.parse(localStorage.getItem(KEY)) || vazio(); } catch { ata = vazio(); }
+
+  const salvar = () => { try { localStorage.setItem(KEY, JSON.stringify(ata)); } catch {} };
+
+  // ---------- Conteúdo canônico e hash ----------
+  function conteudo() {
+    const c = { ...ata }; delete c.assinaturas;
+    return JSON.stringify(c);
+  }
+  async function sha256(txt) {
+    const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt));
+    return [...new Uint8Array(b)].map((x) => x.toString(16).padStart(2, '0')).join('');
+  }
+  let hashAtual = '';
+  async function atualizarHash() {
+    hashAtual = await sha256(conteudo());
+    $('#hashAtual').textContent = hashAtual.slice(0, 16) + '…' + hashAtual.slice(-8);
+    const invalidas = Object.values(ata.assinaturas).filter((s) => s.hash !== hashAtual).length;
+    const al = $('#alert');
+    al.hidden = !invalidas;
+    al.textContent = invalidas ? `O texto foi alterado após ${invalidas} assinatura(s). Elas não valem para a versão atual e precisam ser refeitas.` : '';
+    renderAssinaturas();
+  }
+  let t; const mudou = () => { salvar(); clearTimeout(t); t = setTimeout(atualizarHash, 250); };
+
+  // ---------- Campos simples ----------
+  document.querySelectorAll('[data-f]').forEach((el) => {
+    el.addEventListener('input', () => { ata[el.dataset.f] = el.value; mudou(); });
+  });
+  function preencherCampos() { document.querySelectorAll('[data-f]').forEach((el) => { el.value = ata[el.dataset.f] ?? ''; }); }
+
+  // ---------- Listas ----------
+  const listas = {
+    participantes: {
+      el: '#participantes',
+      novo: () => ({ id:uid(), nome:'', cargo:'', doc:'', presente:true, assina:true }),
+      html: (p) => `
+        <div class="grid">
+          <div><label>Nome completo</label><input data-k="nome" value="${esc(p.nome)}"></div>
+          <div><label>Cargo / função</label><input data-k="cargo" value="${esc(p.cargo)}"></div>
+          <div><label>Documento (CPF/RG/matrícula)</label><input data-k="doc" value="${esc(p.doc)}"></div>
+        </div>
+        <div class="row">
+          <label class="row" style="margin:0"><input type="checkbox" data-k="presente" ${p.presente ? 'checked' : ''} style="width:auto"> Presente</label>
+          <label class="row" style="margin:0"><input type="checkbox" data-k="assina" ${p.assina ? 'checked' : ''} style="width:auto"> Assina</label>
+          <span style="flex:1"></span><button type="button" class="danger" data-del>Remover</button>
+        </div>`
+    },
+    pautas: {
+      el: '#pautas',
+      novo: () => ({ id:uid(), titulo:'', discussao:'', deliberacao:'', votos:'' }),
+      html: (p, i) => `
+        <label>Item ${i + 1} — assunto</label><input data-k="titulo" value="${esc(p.titulo)}">
+        <label style="margin-top:6px">Discussão</label><textarea data-k="discussao">${esc(p.discussao)}</textarea>
+        <div class="grid" style="margin-top:6px">
+          <div><label>Deliberação</label><input data-k="deliberacao" value="${esc(p.deliberacao)}" placeholder="Aprovado / Rejeitado / Adiado"></div>
+          <div><label>Votação</label><input data-k="votos" value="${esc(p.votos)}" placeholder="Ex.: 8 a favor, 1 contra, 1 abstenção"></div>
+        </div>
+        <div class="row"><span style="flex:1"></span><button type="button" class="danger" data-del>Remover</button></div>`
+    },
+    acoes: {
+      el: '#acoes',
+      novo: () => ({ id:uid(), acao:'', resp:'', prazo:'' }),
+      html: (a) => `
+        <div class="grid">
+          <div style="grid-column:span 2"><label>Ação</label><input data-k="acao" value="${esc(a.acao)}"></div>
+          <div><label>Responsável</label><input data-k="resp" value="${esc(a.resp)}"></div>
+          <div><label>Prazo</label><input type="date" data-k="prazo" value="${esc(a.prazo)}"></div>
+        </div>
+        <div class="row"><span style="flex:1"></span><button type="button" class="danger" data-del>Remover</button></div>`
+    }
+  };
+
+  function renderLista(nome) {
+    const L = listas[nome], box = $(L.el);
+    box.innerHTML = ata[nome].map((it, i) => `<div class="item" data-id="${it.id}">${L.html(it, i)}</div>`).join('');
+  }
+  Object.keys(listas).forEach((nome) => {
+    const box = $(listas[nome].el);
+    box.addEventListener('input', (e) => {
+      const k = e.target.dataset.k; if (!k) return;
+      const it = ata[nome].find((x) => x.id === e.target.closest('.item').dataset.id);
+      it[k] = e.target.type === 'checkbox' ? e.target.checked : e.target.value;
+      if (nome === 'participantes') renderAssinaturas();
+      mudou();
+    });
+    box.addEventListener('click', (e) => {
+      if (!e.target.matches('[data-del]')) return;
+      const id = e.target.closest('.item').dataset.id;
+      ata[nome] = ata[nome].filter((x) => x.id !== id);
+      if (nome === 'participantes') delete ata.assinaturas[id];
+      renderLista(nome); mudou();
+    });
+  });
+  $('#addPart').onclick = () => { ata.participantes.push(listas.participantes.novo()); renderLista('participantes'); mudou(); };
+  $('#addPauta').onclick = () => { ata.pautas.push(listas.pautas.novo()); renderLista('pautas'); mudou(); };
+  $('#addAcao').onclick = () => { ata.acoes.push(listas.acoes.novo()); renderLista('acoes'); mudou(); };
+
+  // ---------- Assinaturas ----------
+  const signatarios = () => ata.participantes.filter((p) => p.assina && p.presente && p.nome.trim());
+  const fmtData = (iso) => new Date(iso).toLocaleString('pt-BR');
+
+  function renderAssinaturas() {
+    const lista = signatarios();
+    const ok = lista.filter((p) => ata.assinaturas[p.id]?.hash === hashAtual).length;
+    $('#assinaturas').innerHTML = (lista.length ? `<p><strong>${ok} de ${lista.length}</strong> assinaturas válidas.</p>` : '<p class="muted">Cadastre participantes presentes marcados como “Assina”.</p>') +
+      lista.map((p) => {
+        const s = ata.assinaturas[p.id];
+        const st = !s ? '<span class="badge pend">Pendente</span>' : s.hash === hashAtual ? '<span class="badge ok">Assinada</span>' : '<span class="badge bad">Invalidada</span>';
+        return `<div class="item row" data-id="${p.id}">
+          <div style="flex:1;min-width:180px"><strong>${esc(p.nome)}</strong> ${st}<div class="muted">${esc(p.cargo)}${s ? ' · ' + fmtData(s.em) : ''}</div></div>
+          ${s ? `<img src="${s.img}" alt="" style="height:40px;background:#fff;border-radius:4px">` : ''}
+          <button type="button" class="primary" data-sign>${s ? 'Assinar novamente' : 'Assinar'}</button>
+          ${s ? '<button type="button" class="danger" data-unsign>Remover</button>' : ''}
+        </div>`;
+      }).join('');
+  }
+  $('#assinaturas').addEventListener('click', (e) => {
+    const id = e.target.closest('.item')?.dataset.id; if (!id) return;
+    if (e.target.matches('[data-sign]')) abrirPad(id);
+    if (e.target.matches('[data-unsign]') && confirm('Remover esta assinatura?')) { delete ata.assinaturas[id]; salvar(); renderAssinaturas(); }
+  });
+
+  // Pad de assinatura
+  const dlg = $('#dlg'), pad = $('#pad'), ctx = pad.getContext('2d');
+  let atual = null, desenhou = false, ultimo = null;
+  function abrirPad(id) {
+    const p = ata.participantes.find((x) => x.id === id); atual = id; desenhou = false;
+    $('#dlgNome').textContent = p.nome;
+    $('#dlgCargo').textContent = [p.cargo, p.doc].filter(Boolean).join(' · ');
+    $('#dlgDecl').textContent = `Declaro que li e concordo com o conteúdo da ata “${ata.titulo || 'sem título'}”, versão ${hashAtual.slice(0, 12)}.`;
+    dlg.showModal();
+    const r = pad.getBoundingClientRect(), d = window.devicePixelRatio || 1;
+    pad.width = r.width * d; pad.height = r.height * d;
+    ctx.setTransform(d, 0, 0, d, 0, 0);
+    ctx.lineWidth = 2.2; ctx.lineCap = ctx.lineJoin = 'round'; ctx.strokeStyle = '#0b1d4a';
+    ctx.clearRect(0, 0, r.width, r.height);
+  }
+  const pos = (e) => { const r = pad.getBoundingClientRect(); return [e.clientX - r.left, e.clientY - r.top]; };
+  pad.addEventListener('pointerdown', (e) => { pad.setPointerCapture(e.pointerId); ultimo = pos(e); ctx.beginPath(); ctx.arc(ultimo[0], ultimo[1], 1, 0, 7); ctx.fillStyle = ctx.strokeStyle; ctx.fill(); desenhou = true; });
+  pad.addEventListener('pointermove', (e) => {
+    if (!ultimo) return; const p = pos(e);
+    ctx.beginPath(); ctx.moveTo(...ultimo); ctx.lineTo(...p); ctx.stroke(); ultimo = p;
+  });
+  ['pointerup', 'pointercancel', 'pointerleave'].forEach((ev) => pad.addEventListener(ev, () => { ultimo = null; }));
+  $('#limpar').onclick = () => { ctx.clearRect(0, 0, pad.width, pad.height); desenhou = false; };
+  $('#cancelar').onclick = () => dlg.close();
+  $('#confirmar').onclick = () => {
+    if (!desenhou) { alert('Desenhe a assinatura antes de confirmar.'); return; }
+    ata.assinaturas[atual] = { img: recortar(), em: new Date().toISOString(), hash: hashAtual };
+    salvar(); dlg.close(); renderAssinaturas();
+  };
+  // Recorta o espaço em branco ao redor da assinatura
+  function recortar() {
+    const { width:w, height:h } = pad, d = ctx.getImageData(0, 0, w, h).data;
+    let x0 = w, y0 = h, x1 = 0, y1 = 0;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (d[(y * w + x) * 4 + 3]) { if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y; }
+    const m = 8, c = document.createElement('canvas');
+    x0 = Math.max(0, x0 - m); y0 = Math.max(0, y0 - m); x1 = Math.min(w, x1 + m); y1 = Math.min(h, y1 + m);
+    c.width = x1 - x0; c.height = y1 - y0;
+    c.getContext('2d').drawImage(pad, x0, y0, c.width, c.height, 0, 0, c.width, c.height);
+    return c.toDataURL('image/png');
+  }
+
+  // ---------- Documento para impressão ----------
+  const dataExt = (iso) => iso ? new Date(iso + 'T12:00').toLocaleDateString('pt-BR', { day:'numeric', month:'long', year:'numeric' }) : '___';
+  const br = (s) => esc(s).replace(/\n/g, '<br>');
+  function montarDoc() {
+    const pres = ata.participantes.filter((p) => p.nome.trim());
+    const aus = pres.filter((p) => !p.presente);
+    const abertura = `Aos ${dataExt(ata.data)}${ata.inicio ? ', às ' + esc(ata.inicio) : ''}${ata.local ? ', em ' + esc(ata.local) : ''}, realizou-se a reunião ${esc(ata.tipo).toLowerCase()}${ata.org ? ' de ' + esc(ata.org) : ''}${ata.presidente ? ', presidida por ' + esc(ata.presidente) : ''}${ata.secretario ? ' e secretariada por ' + esc(ata.secretario) : ''}, com a presença das pessoas abaixo relacionadas.`;
+    const sigs = signatarios();
+    $('#doc').innerHTML = `
+      ${ata.org ? `<div class="org">${esc(ata.org)}</div>` : ''}
+      <h1>${esc(ata.titulo || 'Ata de Reunião')}</h1>
+      <div class="sub">Reunião ${esc(ata.tipo)} · ${dataExt(ata.data)}${ata.inicio ? ' · ' + esc(ata.inicio) + (ata.fim ? '–' + esc(ata.fim) : '') : ''}</div>
+      <p>${abertura}</p>
+      <h3>Participantes</h3>
+      <table><tr><th>Nome</th><th>Cargo / função</th><th>Documento</th><th>Situação</th></tr>
+        ${pres.map((p) => `<tr><td>${esc(p.nome)}</td><td>${esc(p.cargo)}</td><td>${esc(p.doc)}</td><td>${p.presente ? 'Presente' : 'Ausente'}</td></tr>`).join('')}
+      </table>
+      ${aus.length ? `<p style="margin-top:6px">Ausência registrada de: ${aus.map((p) => esc(p.nome)).join(', ')}.</p>` : ''}
+      <h3>Pauta e deliberações</h3>
+      ${ata.pautas.filter((p) => p.titulo || p.discussao).map((p, i) => `
+        <p><strong>${i + 1}. ${esc(p.titulo)}</strong></p>
+        ${p.discussao ? `<p>${br(p.discussao)}</p>` : ''}
+        ${p.deliberacao || p.votos ? `<p><em>Deliberação:</em> ${esc(p.deliberacao)}${p.votos ? ' (' + esc(p.votos) + ')' : ''}.</p>` : ''}`).join('') || '<p>—</p>'}
+      ${ata.acoes.length ? `<h3>Encaminhamentos</h3><table><tr><th>Ação</th><th>Responsável</th><th>Prazo</th></tr>
+        ${ata.acoes.map((a) => `<tr><td>${esc(a.acao)}</td><td>${esc(a.resp)}</td><td>${a.prazo ? new Date(a.prazo + 'T12:00').toLocaleDateString('pt-BR') : ''}</td></tr>`).join('')}</table>` : ''}
+      ${ata.obs ? `<h3>Observações</h3><p>${br(ata.obs)}</p>` : ''}
+      <h3>Encerramento</h3>
+      <p>${br(ata.encerramento)}${ata.fim ? ' Encerrada às ' + esc(ata.fim) + '.' : ''}</p>
+      <h3>Assinaturas</h3>
+      <div class="sigs">
+        ${sigs.map((p) => { const s = ata.assinaturas[p.id]; const v = s && s.hash === hashAtual; return `
+          <div class="sig">${v ? `<img src="${s.img}" alt="">` : '<div class="blank"></div>'}
+            <div class="line">${esc(p.nome)}</div>${esc(p.cargo)}${p.doc ? '<br>' + esc(p.doc) : ''}
+            ${v ? `<small>Assinado eletronicamente em ${fmtData(s.em)}</small>` : ''}</div>`; }).join('')}
+      </div>
+      <div class="foot">Impressão digital do conteúdo (SHA-256): ${hashAtual}<br>
+        Assinaturas manuscritas coletadas eletronicamente e vinculadas a esta versão do texto. Gerado em ${new Date().toLocaleString('pt-BR')}.</div>`;
+  }
+
+  $('#pdf').onclick = async () => {
+    await atualizarHash();
+    const lista = signatarios(), faltam = lista.filter((p) => ata.assinaturas[p.id]?.hash !== hashAtual).length;
+    if (faltam && !confirm(`${faltam} de ${lista.length} assinatura(s) ainda pendente(s). Gerar mesmo assim? (as linhas sairão em branco para assinatura física)`)) return;
+    montarDoc(); window.print();
+  };
+
+  // ---------- Arquivo ----------
+  $('#exportar').onclick = () => {
+    const nome = (ata.titulo || 'ata').replace(/[^\w\-]+/g, '_').slice(0, 60);
+    const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob([JSON.stringify(ata, null, 2)], { type:'application/json' })), download: nome + '.json' });
+    a.click(); URL.revokeObjectURL(a.href);
+  };
+  $('#importarBtn').onclick = () => $('#importar').click();
+  $('#importar').onchange = async (e) => {
+    const f = e.target.files[0]; if (!f) return;
+    try { const d = JSON.parse(await f.text()); if (!Array.isArray(d.participantes)) throw 0; ata = { ...vazio(), ...d }; iniciar(); }
+    catch { alert('Arquivo inválido.'); }
+    e.target.value = '';
+  };
+  $('#novo').onclick = () => { if (confirm('Descartar a ata atual e começar outra? Salve o arquivo antes, se precisar.')) { ata = vazio(); iniciar(); } };
+
+  function iniciar() { preencherCampos(); Object.keys(listas).forEach(renderLista); salvar(); atualizarHash(); }
+  iniciar();
+})();
+</script>
+</body>
+</html>
