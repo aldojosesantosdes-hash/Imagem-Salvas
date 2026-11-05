@@ -1,0 +1,483 @@
+<title>Livro de Atas</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Hanken+Grotesk:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: editor de etapas à esquerda, folha da ata viva à direita (empilha no celular) */
+:root{
+  --bg:#eef0f3; --panel:#ffffff; --paper:#fffefb; --ink:#141b2b; --muted:#5b6475; --line:#dcdfe6;
+  --accent:#6e1d2a; --accent-ink:#ffffff; --brass:#9c7b3c; --ok:#17704f; --warn:#94600a; --bad:#a3271d;
+  --display:"Cormorant Garamond",Georgia,"Times New Roman",serif;
+  --body:"Hanken Grotesk",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --paper-ink:#1a1a1a;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1119; --panel:#151a25; --paper:#1b2130; --ink:#e8eaf0; --muted:#98a0b0; --line:#273042;
+  --accent:#d98b96; --accent-ink:#1a0d10; --brass:#c9a866; --ok:#4cc79a; --warn:#e2b04a; --bad:#ff8a7e; --paper-ink:#e9e6df; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#0d1119; --panel:#151a25; --paper:#1b2130; --ink:#e8eaf0; --muted:#98a0b0; --line:#273042;
+  --accent:#d98b96; --accent-ink:#1a0d10; --brass:#c9a866; --ok:#4cc79a; --warn:#e2b04a; --bad:#ff8a7e; --paper-ink:#e9e6df; color-scheme:dark}
+
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--body);margin:0}
+.wrap{max-width:1360px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:28px 120px}
+header.mast{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:16px;padding-bottom:22px;border-bottom:1px solid var(--line);margin-bottom:26px}
+.eyebrow{font:500 .72rem/1 var(--body);letter-spacing:.18em;text-transform:uppercase;color:var(--brass)}
+h1{font:600 clamp(2rem,4.4vw,3.1rem)/1.02 var(--display);margin:8px 0 6px;letter-spacing:-.01em;text-wrap:balance}
+h1 em{font-style:italic;color:var(--accent)}
+.lede{color:var(--muted);max-width:60ch;margin:0}
+.status{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seal{display:flex;align-items:center;gap:12px;padding:10px 14px;border:1px solid var(--line);border-radius:999px;background:var(--panel)}
+.seal b{font:600 1.35rem/1 var(--display);font-variant-numeric:tabular-nums}
+.ring{width:38px;height:38px}
+.ring circle{fill:none;stroke-width:3.5}
+.ring .bg{stroke:var(--line)} .ring .fg{stroke:var(--accent);stroke-linecap:round;transition:stroke-dashoffset .5s}
+
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.05fr);gap:28px;align-items:start}
+@media (max-width:980px){.grid{grid-template-columns:minmax(0,1fr)}}
+
+.step{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:20px;margin-bottom:16px}
+.step>h2{display:flex;align-items:baseline;gap:12px;margin:0 0 4px;font:600 1.35rem/1.2 var(--display)}
+.step>h2 .num{font:500 .75rem/1 var(--mono);color:var(--brass);letter-spacing:.06em}
+.step>p.hint{color:var(--muted);font-size:.86rem;margin:0 0 14px}
+.fields{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.f{display:flex;flex-direction:column;gap:5px;min-width:0}
+.f.wide{grid-column:1/-1}
+label,.lbl{font:500 .7rem/1 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:9px 11px;width:100%;min-width:0;transition:border-color .15s,box-shadow .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 18%,transparent)}
+textarea{min-height:78px;resize:vertical}
+.check{display:inline-flex;align-items:center;gap:7px;font-size:.88rem;color:var(--ink);text-transform:none;letter-spacing:0}
+.check input{width:16px;height:16px;accent-color:var(--accent);padding:0}
+.item{border-top:1px dashed var(--line);padding-top:14px;margin-top:14px;display:flex;flex-direction:column;gap:10px}
+.item:first-child{border-top:0;margin-top:0;padding-top:0}
+.itemhead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.itemhead .tag{font:500 .75rem/1 var(--mono);color:var(--brass)}
+
+button{font:600 .86rem/1 var(--body);border-radius:9px;padding:10px 15px;cursor:pointer;border:1px solid var(--line);background:var(--panel);color:var(--ink);transition:transform .08s,background .15s,border-color .15s}
+button:hover{border-color:var(--ink)}
+button:active{transform:translateY(1px)}
+button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+button.ghost{background:transparent;border-color:transparent;color:var(--muted);padding:6px 8px}
+button.ghost:hover{color:var(--bad)}
+button.add{margin-top:14px;border-style:dashed;background:transparent;color:var(--muted)}
+button.add:hover{color:var(--ink)}
+button:disabled{opacity:.45;cursor:default}
+
+.signer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:12px 0;border-top:1px solid var(--line)}
+.signer:first-of-type{border-top:0}
+.signer .who b{font-weight:600}
+.signer .who small{display:block;color:var(--muted);font-size:.8rem}
+.signer img{height:34px;max-width:110px;object-fit:contain;filter:var(--sigfilter,none)}
+.acts{display:flex;gap:8px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.pill{display:inline-block;font:600 .66rem/1 var(--body);letter-spacing:.08em;text-transform:uppercase;padding:4px 8px;border-radius:999px;margin-left:6px;vertical-align:2px}
+.pill.ok{color:var(--ok);background:color-mix(in srgb,var(--ok) 13%,transparent)}
+.pill.pend{color:var(--warn);background:color-mix(in srgb,var(--warn) 14%,transparent)}
+.pill.bad{color:var(--bad);background:color-mix(in srgb,var(--bad) 13%,transparent)}
+.fingerprint{font:400 .74rem/1.4 var(--mono);color:var(--muted);word-break:break-all;background:var(--bg);border-radius:8px;padding:9px 11px;margin-bottom:6px}
+.fingerprint b{color:var(--ink);font-weight:500}
+.banner{border:1px solid var(--warn);color:var(--warn);background:color-mix(in srgb,var(--warn) 8%,transparent);border-radius:10px;padding:10px 14px;font-size:.88rem;margin-bottom:16px}
+
+/* Folha */
+.sheetcol{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
+@media (max-width:980px){.sheetcol{position:static}}
+.sheetbar{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+.sheetwrap{max-height:calc(100vh - 120px);overflow:auto;border-radius:6px}
+@media (max-width:980px){.sheetwrap{max-height:none}}
+.sheet{background:var(--paper);color:var(--paper-ink);padding:clamp(22px,5vw,58px) clamp(18px,5vw,62px);box-shadow:0 1px 0 var(--line),0 24px 50px -28px rgba(10,15,30,.35);border:1px solid var(--line);font:15px/1.65 Georgia,"Times New Roman",serif;position:relative}
+.sheet::before{content:"";position:absolute;inset:12px;border:1px solid color-mix(in srgb,var(--brass) 35%,transparent);pointer-events:none}
+.sheet .org{text-align:center;font:500 .72rem/1 var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--brass)}
+.sheet h3.t{text-align:center;font:600 1.75rem/1.15 var(--display);margin:10px 0 4px;text-wrap:balance}
+.sheet .sub{text-align:center;font-size:.85rem;color:var(--muted);margin-bottom:20px}
+.sheet h4{font:600 .7rem/1 var(--body);letter-spacing:.16em;text-transform:uppercase;margin:22px 0 8px;padding-bottom:6px;border-bottom:1px solid color-mix(in srgb,var(--paper-ink) 25%,transparent)}
+.sheet p{margin:0 0 8px;text-align:justify;hyphens:auto}
+.sheet .tbl{overflow-x:auto}
+.sheet table{width:100%;border-collapse:collapse;font-size:.84rem}
+.sheet th,.sheet td{text-align:left;padding:6px 8px;border-bottom:1px solid color-mix(in srgb,var(--paper-ink) 15%,transparent);vertical-align:top}
+.sheet th{font:600 .64rem/1.2 var(--body);letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.sigs{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:26px 30px;margin-top:16px}
+.sig{text-align:center;font-size:.8rem}
+.sig .ink{height:58px;display:flex;align-items:flex-end;justify-content:center}
+.sig .ink img{max-height:58px;max-width:100%;filter:var(--sigfilter,none)}
+.sig .line{border-top:1px solid var(--paper-ink);padding-top:5px;font-weight:600;font-family:var(--body);font-size:.84rem}
+.sig small{display:block;color:var(--muted);font:400 .64rem/1.3 var(--mono);margin-top:3px}
+.sheet .foot{margin-top:26px;padding-top:10px;border-top:1px solid color-mix(in srgb,var(--paper-ink) 25%,transparent);font:400 .64rem/1.5 var(--mono);color:var(--muted);word-break:break-all}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--sigfilter:invert(1) hue-rotate(180deg) brightness(1.4)}}
+:root[data-theme="dark"]{--sigfilter:invert(1) hue-rotate(180deg) brightness(1.4)}
+
+/* Barra de ações */
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:20;background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(10px);border-top:1px solid var(--line);padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-top:12px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px))}
+.dock .in{max-width:1360px;margin:0 auto;display:flex;gap:10px;flex-wrap:wrap;align-items:center;justify-content:space-between}
+.dock .l,.dock .r{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.toast{font-size:.85rem;color:var(--muted)}
+.confirm{display:flex;gap:8px;align-items:center;flex-wrap:wrap;font-size:.86rem}
+
+/* Pad */
+.modal{position:fixed;inset:0;z-index:40;background:rgba(8,10,16,.6);display:flex;align-items:center;justify-content:center;padding:max(16px,env(safe-area-inset-top,0px)) max(16px,env(safe-area-inset-right,0px)) max(16px,env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;width:min(680px,100%);padding:22px}
+.card h3{font:600 1.6rem/1.1 var(--display);margin:4px 0 2px}
+.card .decl{background:var(--bg);border-left:2px solid var(--brass);padding:10px 12px;font-size:.86rem;color:var(--muted);margin:14px 0}
+.padbox{position:relative;border-radius:10px;overflow:hidden;border:1px solid var(--line);background:#fbfaf6}
+.padbox::after{content:"";position:absolute;left:24px;right:24px;bottom:46px;border-top:1px solid #b9b2a2;pointer-events:none}
+.padbox span{position:absolute;left:24px;bottom:24px;font:400 .7rem/1 var(--mono);color:#8a8475;pointer-events:none}
+canvas{display:block;width:100%;height:220px;touch-action:none;cursor:crosshair}
+.row{display:flex;gap:8px;justify-content:space-between;flex-wrap:wrap;margin-top:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="mast">
+    <div>
+      <div class="eyebrow">Livro de Atas · assinatura múltipla</div>
+      <h1>Ata lavrada, lida e <em>assinada</em> por todos.</h1>
+      <p class="lede">Redija a ata, colete a assinatura de cada presente no próprio aparelho e emita o PDF. Cada assinatura fica presa a esta versão exata do texto.</p>
+    </div>
+    <div class="status">
+      <div class="seal">
+        <svg class="ring" viewBox="0 0 40 40" aria-hidden="true"><circle class="bg" cx="20" cy="20" r="16"/><circle class="fg" id="ringFg" cx="20" cy="20" r="16" transform="rotate(-90 20 20)" stroke-dasharray="100.5" stroke-dashoffset="100.5"/></svg>
+        <div><b id="sealCount">0/0</b><div class="lbl" style="margin-top:4px">assinaturas válidas</div></div>
+      </div>
+    </div>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <div class="grid">
+    <div>
+      <section class="step">
+        <h2><span class="num">I</span> Identificação</h2>
+        <p class="hint">Cabeçalho e termo de abertura.</p>
+        <div class="fields">
+          <div class="f wide"><label for="org">Organização</label><input id="org" data-f="org"></div>
+          <div class="f wide"><label for="titulo">Título</label><input id="titulo" data-f="titulo"></div>
+          <div class="f"><label for="tipo">Natureza</label><select id="tipo" data-f="tipo"><option>Ordinária</option><option>Extraordinária</option><option>Assembleia Geral Ordinária</option><option>Assembleia Geral Extraordinária</option><option>Reunião de Diretoria</option><option>Reunião de Equipe</option></select></div>
+          <div class="f"><label for="data">Data</label><input id="data" type="date" data-f="data"></div>
+          <div class="f"><label for="inicio">Início</label><input id="inicio" type="time" data-f="inicio"></div>
+          <div class="f"><label for="fim">Término</label><input id="fim" type="time" data-f="fim"></div>
+          <div class="f wide"><label for="local">Local ou plataforma</label><input id="local" data-f="local"></div>
+          <div class="f"><label for="presidente">Presidiu</label><input id="presidente" data-f="presidente"></div>
+          <div class="f"><label for="secretario">Secretariou</label><input id="secretario" data-f="secretario"></div>
+        </div>
+      </section>
+
+      <section class="step">
+        <h2><span class="num">II</span> Presentes e signatários</h2>
+        <p class="hint">Ausentes constam da ata e não assinam.</p>
+        <div id="participantes"></div>
+        <button class="add" type="button" id="addPart">+ Adicionar participante</button>
+      </section>
+
+      <section class="step">
+        <h2><span class="num">III</span> Ordem do dia</h2>
+        <p class="hint">Um item por assunto, com o que foi discutido e o que se decidiu.</p>
+        <div id="pautas"></div>
+        <button class="add" type="button" id="addPauta">+ Adicionar item de pauta</button>
+      </section>
+
+      <section class="step">
+        <h2><span class="num">IV</span> Encaminhamentos</h2>
+        <p class="hint">Quem faz o quê, até quando.</p>
+        <div id="acoes"></div>
+        <button class="add" type="button" id="addAcao">+ Adicionar encaminhamento</button>
+      </section>
+
+      <section class="step">
+        <h2><span class="num">V</span> Encerramento</h2>
+        <div class="fields">
+          <div class="f wide"><label for="obs">Declarações em ata</label><textarea id="obs" data-f="obs"></textarea></div>
+          <div class="f wide"><label for="encerramento">Termo de encerramento</label><textarea id="encerramento" data-f="encerramento"></textarea></div>
+        </div>
+      </section>
+
+      <section class="step">
+        <h2><span class="num">VI</span> Assinaturas</h2>
+        <p class="hint">Entregue o aparelho a cada signatário. Se o texto mudar depois, a assinatura perde a validade e precisa ser refeita.</p>
+        <div class="fingerprint">Impressão digital SHA-256 do texto: <b id="hash">calculando…</b></div>
+        <div id="signers"></div>
+      </section>
+    </div>
+
+    <aside class="sheetcol">
+      <div class="sheetbar"><span class="eyebrow">Folha da ata · pré-visualização</span><span class="lbl" id="saved"></span></div>
+      <div class="sheetwrap"><article class="sheet" id="sheet"></article></div>
+    </aside>
+  </div>
+</div>
+
+<div class="dock"><div class="in">
+  <div class="l" id="dockL">
+    <button type="button" id="novo">Nova ata</button>
+    <button type="button" id="abrir">Abrir .json</button>
+    <input type="file" id="arquivo" accept=".json,application/json" hidden>
+    <span class="toast" id="toast" aria-live="polite"></span>
+  </div>
+  <div class="r">
+    <button type="button" id="salvarJson">Salvar .json</button>
+    <button type="button" class="primary" id="pdf">Emitir PDF</button>
+  </div>
+</div></div>
+
+<div class="modal" id="modal" hidden>
+  <div class="card" role="dialog" aria-modal="true" aria-labelledby="mNome">
+    <div class="eyebrow">Assinatura</div>
+    <h3 id="mNome"></h3>
+    <div class="lbl" id="mCargo" style="text-transform:none;letter-spacing:0;font-size:.85rem"></div>
+    <div class="decl" id="mDecl"></div>
+    <div class="padbox"><canvas id="pad"></canvas><span>assine acima da linha</span></div>
+    <div class="row">
+      <button type="button" id="limpar">Limpar</button>
+      <div style="display:flex;gap:8px"><button type="button" id="cancelar">Cancelar</button><button type="button" class="primary" id="confirmar">Confirmar assinatura</button></div>
+    </div>
+    <div class="toast" id="mMsg" style="margin-top:8px"></div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(() => {
+const KEY = 'livro-de-atas-v1';
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid = () => Math.random().toString(36).slice(2, 10);
+const ENC = 'Nada mais havendo a tratar, o(a) Presidente declarou encerrada a reunião, e eu, Secretário(a), lavrei a presente ata, que, lida e achada conforme, vai assinada por mim e pelos presentes.';
+
+const exemplo = () => ({
+  exemplo: true, org:'Condomínio Residencial Mirante do Vale', titulo:'Ata da Assembleia Geral Extraordinária nº 03/2026', tipo:'Assembleia Geral Extraordinária',
+  data:'2026-11-05', inicio:'19:30', fim:'21:10', local:'Salão de festas do Bloco A', presidente:'Helena Duarte', secretario:'Marcos Vieira',
+  participantes:[
+    {id:uid(),nome:'Helena Duarte',cargo:'Síndica',doc:'Unid. 301-A',presente:true,assina:true},
+    {id:uid(),nome:'Marcos Vieira',cargo:'Secretário da mesa',doc:'Unid. 104-B',presente:true,assina:true},
+    {id:uid(),nome:'Renata Campos',cargo:'Conselho Fiscal',doc:'Unid. 702-A',presente:true,assina:true},
+    {id:uid(),nome:'Paulo Siqueira',cargo:'Condômino',doc:'Unid. 503-B',presente:false,assina:false}],
+  pautas:[
+    {id:uid(),titulo:'Recuperação da fachada e impermeabilização',discussao:'Apresentados três orçamentos. O Conselho Fiscal recomendou a proposta intermediária pelo prazo de garantia de cinco anos.',deliberacao:'Aprovada a proposta intermediária, com rateio em 10 parcelas',votos:'38 a favor, 4 contra, 2 abstenções'},
+    {id:uid(),titulo:'Regras de uso da área gourmet',discussao:'Proposta de limite de 30 convidados e encerramento às 23h.',deliberacao:'Aprovada',votos:'Unanimidade dos presentes'}],
+  acoes:[
+    {id:uid(),acao:'Assinar contrato com a empresa vencedora',resp:'Helena Duarte',prazo:'2026-11-20'},
+    {id:uid(),acao:'Publicar novo regulamento da área gourmet',resp:'Marcos Vieira',prazo:'2026-11-12'}],
+  obs:'', encerramento:ENC, assinaturas:{}
+});
+const vazio = () => ({ exemplo:false, org:'', titulo:'', tipo:'Ordinária', data:new Date().toISOString().slice(0,10), inicio:'', fim:'', local:'', presidente:'', secretario:'',
+  participantes:[{id:uid(),nome:'',cargo:'',doc:'',presente:true,assina:true}], pautas:[{id:uid(),titulo:'',discussao:'',deliberacao:'',votos:''}], acoes:[], obs:'', encerramento:ENC, assinaturas:{} });
+
+let ata;
+try { ata = JSON.parse(localStorage.getItem(KEY)) || exemplo(); } catch { ata = exemplo(); }
+const salvar = () => { try { localStorage.setItem(KEY, JSON.stringify(ata)); $('#saved').textContent = 'rascunho salvo neste navegador'; } catch { $('#saved').textContent = ''; } };
+const toast = (m) => { const t = $('#toast'); t.textContent = m; clearTimeout(toast.t); toast.t = setTimeout(() => t.textContent = '', 5000); };
+
+// ---- hash ----
+const conteudo = () => { const c = {...ata}; delete c.assinaturas; delete c.exemplo; return JSON.stringify(c); };
+async function sha256(t){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
+let H = '';
+async function refresh(){
+  H = await sha256(conteudo());
+  $('#hash').textContent = H;
+  const inv = signatarios().filter(p => ata.assinaturas[p.id] && ata.assinaturas[p.id].hash !== H).length;
+  const b = $('#banner'); b.hidden = !inv;
+  b.textContent = inv ? `O texto mudou depois de ${inv} assinatura(s). Elas não valem para esta versão e precisam ser refeitas.` : '';
+  renderSigners(); renderSheet();
+}
+let tm; const mudou = () => { ata.exemplo = false; salvar(); clearTimeout(tm); tm = setTimeout(refresh, 220); };
+
+// ---- campos ----
+document.querySelectorAll('[data-f]').forEach(el => el.addEventListener('input', () => { ata[el.dataset.f] = el.value; mudou(); }));
+const fill = () => document.querySelectorAll('[data-f]').forEach(el => el.value = ata[el.dataset.f] ?? '');
+
+const L = {
+  participantes:{ novo:()=>({id:uid(),nome:'',cargo:'',doc:'',presente:true,assina:true}), html:(p,i)=>`
+    <div class="itemhead"><span class="tag">Participante ${String(i+1).padStart(2,'0')}</span><button type="button" class="ghost" data-del>Remover</button></div>
+    <div class="fields">
+      <div class="f wide"><label>Nome completo</label><input data-k="nome" value="${esc(p.nome)}"></div>
+      <div class="f"><label>Cargo ou função</label><input data-k="cargo" value="${esc(p.cargo)}"></div>
+      <div class="f"><label>Documento ou unidade</label><input data-k="doc" value="${esc(p.doc)}"></div>
+    </div>
+    <div style="display:flex;gap:18px;flex-wrap:wrap"><label class="check"><input type="checkbox" data-k="presente" ${p.presente?'checked':''}> Presente</label><label class="check"><input type="checkbox" data-k="assina" ${p.assina?'checked':''}> Assina a ata</label></div>`},
+  pautas:{ novo:()=>({id:uid(),titulo:'',discussao:'',deliberacao:'',votos:''}), html:(p,i)=>`
+    <div class="itemhead"><span class="tag">Item ${i+1}</span><button type="button" class="ghost" data-del>Remover</button></div>
+    <div class="f"><label>Assunto</label><input data-k="titulo" value="${esc(p.titulo)}"></div>
+    <div class="f"><label>Discussão</label><textarea data-k="discussao">${esc(p.discussao)}</textarea></div>
+    <div class="fields"><div class="f"><label>Deliberação</label><input data-k="deliberacao" value="${esc(p.deliberacao)}" placeholder="Aprovado, rejeitado, adiado"></div>
+    <div class="f"><label>Votação</label><input data-k="votos" value="${esc(p.votos)}" placeholder="12 a favor, 1 contra"></div></div>`},
+  acoes:{ novo:()=>({id:uid(),acao:'',resp:'',prazo:''}), html:(a,i)=>`
+    <div class="itemhead"><span class="tag">Encaminhamento ${i+1}</span><button type="button" class="ghost" data-del>Remover</button></div>
+    <div class="fields"><div class="f wide"><label>Ação</label><input data-k="acao" value="${esc(a.acao)}"></div>
+    <div class="f"><label>Responsável</label><input data-k="resp" value="${esc(a.resp)}"></div>
+    <div class="f"><label>Prazo</label><input type="date" data-k="prazo" value="${esc(a.prazo)}"></div></div>`}
+};
+const renderList = n => $('#'+n).innerHTML = ata[n].map((it,i)=>`<div class="item" data-id="${it.id}">${L[n].html(it,i)}</div>`).join('');
+Object.keys(L).forEach(n => {
+  const box = $('#'+n);
+  box.addEventListener('input', e => { const k = e.target.dataset.k; if(!k) return; const it = ata[n].find(x=>x.id===e.target.closest('.item').dataset.id); it[k] = e.target.type==='checkbox'?e.target.checked:e.target.value; mudou(); });
+  box.addEventListener('click', e => { if(!e.target.matches('[data-del]')) return; const id = e.target.closest('.item').dataset.id; ata[n] = ata[n].filter(x=>x.id!==id); if(n==='participantes') delete ata.assinaturas[id]; renderList(n); mudou(); });
+});
+$('#addPart').onclick = () => { ata.participantes.push(L.participantes.novo()); renderList('participantes'); mudou(); };
+$('#addPauta').onclick = () => { ata.pautas.push(L.pautas.novo()); renderList('pautas'); mudou(); };
+$('#addAcao').onclick = () => { ata.acoes.push(L.acoes.novo()); renderList('acoes'); mudou(); };
+
+// ---- assinaturas ----
+const signatarios = () => ata.participantes.filter(p => p.assina && p.presente && p.nome.trim());
+const valida = p => ata.assinaturas[p.id]?.hash === H;
+const fmt = iso => new Date(iso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
+function renderSigners(){
+  const s = signatarios(), ok = s.filter(valida).length;
+  $('#sealCount').textContent = `${ok}/${s.length}`;
+  $('#ringFg').style.strokeDashoffset = 100.5 * (1 - (s.length ? ok/s.length : 0));
+  $('#signers').innerHTML = s.length ? s.map(p => { const a = ata.assinaturas[p.id];
+    const pill = !a ? '<span class="pill pend">pendente</span>' : valida(p) ? '<span class="pill ok">assinada</span>' : '<span class="pill bad">invalidada</span>';
+    return `<div class="signer" data-id="${p.id}"><div class="who"><b>${esc(p.nome)}</b>${pill}<small>${esc(p.cargo)}${a?' · '+fmt(a.em):''}</small></div>
+      <div class="acts">${a&&valida(p)?`<img src="${a.img}" alt="Assinatura de ${esc(p.nome)}">`:''}
+      ${a?'<button type="button" class="ghost" data-un>Remover</button>':''}
+      <button type="button" class="${a&&valida(p)?'':'primary'}" data-sign>${a?'Assinar de novo':'Assinar'}</button></div></div>`; }).join('')
+    : '<p class="hint" style="color:var(--muted);margin:0">Marque presentes com “Assina a ata” para que apareçam aqui.</p>';
+}
+$('#signers').addEventListener('click', e => { const id = e.target.closest('.signer')?.dataset.id; if(!id) return;
+  if(e.target.matches('[data-sign]')) abrir(id);
+  if(e.target.matches('[data-un]')){ delete ata.assinaturas[id]; salvar(); renderSigners(); renderSheet(); toast('Assinatura removida.'); } });
+
+const modal = $('#modal'), pad = $('#pad'), ctx = pad.getContext('2d');
+let alvo=null, traco=false, ult=null;
+function abrir(id){
+  const p = ata.participantes.find(x=>x.id===id); alvo=id; traco=false; $('#mMsg').textContent='';
+  $('#mNome').textContent = p.nome; $('#mCargo').textContent = [p.cargo,p.doc].filter(Boolean).join(' · ');
+  $('#mDecl').textContent = `Declaro que li e concordo com o inteiro teor da “${ata.titulo||'ata'}”, versão ${H.slice(0,12)}.`;
+  modal.hidden = false;
+  const r = pad.getBoundingClientRect(), d = devicePixelRatio||1;
+  pad.width = r.width*d; pad.height = r.height*d; ctx.setTransform(d,0,0,d,0,0);
+  ctx.lineCap = ctx.lineJoin = 'round'; ctx.strokeStyle = ctx.fillStyle = '#10204a'; ctx.clearRect(0,0,r.width,r.height);
+}
+const pos = e => { const r = pad.getBoundingClientRect(); return {x:e.clientX-r.left, y:e.clientY-r.top, t:e.timeStamp}; };
+pad.addEventListener('pointerdown', e => { pad.setPointerCapture(e.pointerId); ult = pos(e); ctx.beginPath(); ctx.arc(ult.x,ult.y,1.1,0,7); ctx.fill(); traco = true; });
+pad.addEventListener('pointermove', e => { if(!ult) return; const p = pos(e);
+  const v = Math.hypot(p.x-ult.x,p.y-ult.y)/Math.max(1,p.t-ult.t); ctx.lineWidth = Math.max(1.2, 3.2 - v*1.4);
+  ctx.beginPath(); ctx.moveTo(ult.x,ult.y); ctx.lineTo(p.x,p.y); ctx.stroke(); ult = p; });
+['pointerup','pointercancel','pointerleave'].forEach(ev => pad.addEventListener(ev, () => ult = null));
+$('#limpar').onclick = () => { ctx.clearRect(0,0,pad.width,pad.height); traco=false; };
+$('#cancelar').onclick = () => modal.hidden = true;
+$('#confirmar').onclick = () => {
+  if(!traco){ $('#mMsg').textContent = 'Desenhe a assinatura no quadro antes de confirmar.'; return; }
+  ata.assinaturas[alvo] = { img: recorte(), em: new Date().toISOString(), hash: H };
+  salvar(); modal.hidden = true; renderSigners(); renderSheet(); toast('Assinatura registrada.');
+};
+function recorte(){
+  const w=pad.width,h=pad.height,d=ctx.getImageData(0,0,w,h).data; let x0=w,y0=h,x1=0,y1=0;
+  for(let y=0;y<h;y++)for(let x=0;x<w;x++)if(d[(y*w+x)*4+3]){if(x<x0)x0=x;if(x>x1)x1=x;if(y<y0)y0=y;if(y>y1)y1=y;}
+  const m=10,c=document.createElement('canvas'); x0=Math.max(0,x0-m);y0=Math.max(0,y0-m);x1=Math.min(w,x1+m);y1=Math.min(h,y1+m);
+  c.width=x1-x0;c.height=y1-y0;c.getContext('2d').drawImage(pad,x0,y0,c.width,c.height,0,0,c.width,c.height); return c.toDataURL('image/png');
+}
+
+// ---- texto da ata ----
+const dExt = iso => iso ? new Date(iso+'T12:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'}) : '___';
+const dCurta = iso => iso ? new Date(iso+'T12:00').toLocaleDateString('pt-BR') : '';
+function abertura(){
+  const t = ata.tipo.toLowerCase();
+  return `Aos ${dExt(ata.data)}${ata.inicio?', às '+ata.inicio:''}${ata.local?', em '+ata.local:''}, reuniu-se em ${/assembleia|reuni/i.test(t)?t:'reunião '+t}${ata.org?' '+(/^(condom|associa|empresa|igreja|escola)/i.test(ata.org)?'do(a) ':'de ')+ata.org:''}${ata.presidente?', sob a presidência de '+ata.presidente:''}${ata.secretario?', secretariada por '+ata.secretario:''}, com a presença das pessoas abaixo relacionadas.`;
+}
+const pautasV = () => ata.pautas.filter(p=>p.titulo||p.discussao);
+function renderSheet(){
+  const pres = ata.participantes.filter(p=>p.nome.trim()), aus = pres.filter(p=>!p.presente), s = signatarios();
+  $('#sheet').innerHTML = `
+    ${ata.exemplo?'<div class="pill pend" style="position:absolute;top:22px;right:22px;margin:0">Exemplo</div>':''}
+    <div class="org">${esc(ata.org||'Organização')}</div>
+    <h3 class="t">${esc(ata.titulo||'Ata de Reunião')}</h3>
+    <div class="sub">${esc(ata.tipo)} · ${dExt(ata.data)}${ata.inicio?' · '+esc(ata.inicio)+(ata.fim?'–'+esc(ata.fim):''):''}</div>
+    <p>${esc(abertura())}</p>
+    <h4>Presentes</h4>
+    <div class="tbl"><table><tr><th>Nome</th><th>Cargo</th><th>Doc. / unid.</th><th>Situação</th></tr>
+    ${pres.map(p=>`<tr><td>${esc(p.nome)}</td><td>${esc(p.cargo)}</td><td>${esc(p.doc)}</td><td>${p.presente?'Presente':'Ausente'}</td></tr>`).join('')}</table></div>
+    ${aus.length?`<p style="margin-top:8px">Registrada a ausência de ${aus.map(p=>esc(p.nome)).join(', ')}.</p>`:''}
+    <h4>Ordem do dia</h4>
+    ${pautasV().map((p,i)=>`<p><strong>${i+1}. ${esc(p.titulo)}.</strong> ${esc(p.discussao)}${p.deliberacao?` <em>Deliberação:</em> ${esc(p.deliberacao)}${p.votos?' ('+esc(p.votos)+')':''}.`:''}</p>`).join('')||'<p>—</p>'}
+    ${ata.acoes.length?`<h4>Encaminhamentos</h4><div class="tbl"><table><tr><th>Ação</th><th>Responsável</th><th>Prazo</th></tr>${ata.acoes.map(a=>`<tr><td>${esc(a.acao)}</td><td>${esc(a.resp)}</td><td>${dCurta(a.prazo)}</td></tr>`).join('')}</table></div>`:''}
+    ${ata.obs?`<h4>Declarações</h4><p>${esc(ata.obs)}</p>`:''}
+    <h4>Encerramento</h4>
+    <p>${esc(ata.encerramento)}${ata.fim?' Encerrada às '+esc(ata.fim)+'.':''}</p>
+    <h4>Assinaturas</h4>
+    <div class="sigs">${s.map(p=>{const a=ata.assinaturas[p.id],v=valida(p);return `<div class="sig"><div class="ink">${v?`<img src="${a.img}" alt="">`:''}</div><div class="line">${esc(p.nome)}</div><div>${esc(p.cargo)}</div>${v?`<small>assinado em ${fmt(a.em)}</small>`:''}</div>`}).join('')}</div>
+    <div class="foot">SHA-256 do conteúdo: ${H}</div>`;
+}
+
+// ---- PDF ----
+function gerarPDF(){
+  const { jsPDF } = window.jspdf; const doc = new jsPDF({unit:'mm',format:'a4'});
+  const W=210, M=22, CW=W-2*M; let y=26;
+  const bottom = 280;
+  const need = h => { if(y+h>bottom){ doc.addPage(); y=24; moldura(); } };
+  const moldura = () => { doc.setDrawColor(156,123,60); doc.setLineWidth(.25); doc.rect(10,10,W-20,277); };
+  const par = (t, size=10.5, style='normal', align='justify') => { doc.setFont('times',style); doc.setFontSize(size);
+    const lines = doc.splitTextToSize(t, CW); lines.forEach((ln,i) => { need(5.2); doc.text(ln, align==='center'?W/2:M, y, {align: align==='center'?'center':(i===lines.length-1?'left':align), maxWidth:CW}); y+=5.2; }); y+=1.5; };
+  const sec = t => { need(14); y+=3; doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setCharSpace(.6); doc.text(t.toUpperCase(), M, y); doc.setCharSpace(0); y+=2; doc.setDrawColor(40); doc.setLineWidth(.2); doc.line(M,y,W-M,y); y+=6; };
+  const tabela = (cols, rows, widths) => { doc.setFontSize(9);
+    const draw = (cells, bold) => { doc.setFont(bold?'helvetica':'times', bold?'bold':'normal'); doc.setFontSize(bold?7.5:9.5);
+      const wrapped = cells.map((c,i)=>doc.splitTextToSize(String(c||''), widths[i]-2)); const h = Math.max(...wrapped.map(w=>w.length))*4.4+2.4; need(h);
+      let x=M; wrapped.forEach((w,i)=>{ doc.text(w, x+1, y+3.6); x+=widths[i]; }); y+=h; doc.setDrawColor(200); doc.line(M,y-.8,W-M,y-.8); };
+    draw(cols, true); rows.forEach(r=>draw(r,false)); y+=3; };
+  moldura();
+  doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(156,123,60); doc.setCharSpace(1);
+  doc.text((ata.org||'').toUpperCase(), W/2, y, {align:'center'}); doc.setCharSpace(0); doc.setTextColor(20); y+=8;
+  doc.setFont('times','bold'); doc.setFontSize(16); doc.splitTextToSize(ata.titulo||'Ata de Reunião', CW).forEach(l=>{doc.text(l,W/2,y,{align:'center'}); y+=7;});
+  doc.setFont('times','italic'); doc.setFontSize(10); doc.setTextColor(90);
+  doc.text(`${ata.tipo} · ${dExt(ata.data)}${ata.inicio?' · '+ata.inicio+(ata.fim?'–'+ata.fim:''):''}`, W/2, y, {align:'center'}); doc.setTextColor(20); y+=10;
+  par(abertura());
+  const pres = ata.participantes.filter(p=>p.nome.trim()), aus = pres.filter(p=>!p.presente);
+  sec('Presentes'); tabela(['Nome','Cargo','Doc. / unid.','Situação'], pres.map(p=>[p.nome,p.cargo,p.doc,p.presente?'Presente':'Ausente']), [60,46,38,22]);
+  if(aus.length) par('Registrada a ausência de '+aus.map(p=>p.nome).join(', ')+'.');
+  sec('Ordem do dia');
+  pautasV().forEach((p,i)=>{ par(`${i+1}. ${p.titulo}.`, 10.5, 'bold', 'left'); y-=1.5; if(p.discussao) par(p.discussao); if(p.deliberacao) par(`Deliberação: ${p.deliberacao}${p.votos?' ('+p.votos+')':''}.`, 10.5, 'italic'); });
+  if(ata.acoes.length){ sec('Encaminhamentos'); tabela(['Ação','Responsável','Prazo'], ata.acoes.map(a=>[a.acao,a.resp,dCurta(a.prazo)]), [96,46,24]); }
+  if(ata.obs){ sec('Declarações'); par(ata.obs); }
+  sec('Encerramento'); par(ata.encerramento + (ata.fim?' Encerrada às '+ata.fim+'.':''));
+  sec('Assinaturas');
+  const s = signatarios(), colW = (CW-12)/2;
+  s.forEach((p,i) => { const col=i%2; if(col===0) need(34); const x = M + col*(colW+12);
+    const a = ata.assinaturas[p.id];
+    if(a && valida(p)){ const pr = doc.getImageProperties(a.img); const h=16, w=Math.min(colW, pr.width/pr.height*h); doc.addImage(a.img,'PNG',x+(colW-w)/2,y,w,h); }
+    doc.setDrawColor(20); doc.line(x, y+18, x+colW, y+18);
+    doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.text(p.nome, x+colW/2, y+22, {align:'center'});
+    doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.text([p.cargo,p.doc].filter(Boolean).join(' · '), x+colW/2, y+25.5, {align:'center'});
+    if(a && valida(p)){ doc.setFontSize(6.5); doc.setTextColor(110); doc.text('Assinado eletronicamente em '+fmt(a.em), x+colW/2, y+29, {align:'center'}); doc.setTextColor(20); }
+    if(col===1 || i===s.length-1) y += 34; });
+  const n = doc.getNumberOfPages();
+  for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFont('courier','normal'); doc.setFontSize(6.5); doc.setTextColor(110);
+    doc.text(`SHA-256 ${H}`, M, 284); doc.text(`${i}/${n}`, W-M, 284, {align:'right'}); doc.setTextColor(20); }
+  return doc.output('arraybuffer');
+}
+const nomeArq = ext => ((ata.titulo||'ata').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w\-]+/g,'_').replace(/_+/g,'_').slice(0,70))+'.'+ext;
+
+let downloads = null;
+(async () => { try { downloads = await window.claude?.use?.('downloads'); } catch {} })();
+async function salvarArquivo(filename, data){
+  if(!downloads){ toast('Este ambiente não permite salvar arquivos.'); return; }
+  try { await downloads.save({filename, data}); toast('Arquivo salvo: '+filename); }
+  catch(e){ toast(e?.code==='declined' ? 'Download cancelado.' : 'Não foi possível salvar o arquivo.'); }
+}
+
+// confirmação inline na barra
+function confirmar(msg, sim, acao){
+  const l = $('#dockL'), antes = l.innerHTML;
+  const box = document.createElement('div'); box.className='confirm';
+  box.innerHTML = `<span>${esc(msg)}</span><button type="button" class="primary">${esc(sim)}</button><button type="button">Voltar</button>`;
+  const r = $('.dock .r'); r.hidden = true; l.hidden = true; l.parentNode.insertBefore(box, l);
+  const fim = () => { box.remove(); l.hidden = false; r.hidden = false; };
+  box.children[1].onclick = () => { fim(); acao(); }; box.children[2].onclick = fim;
+}
+
+$('#pdf').onclick = async () => {
+  await refresh();
+  if(!window.jspdf){ toast('O gerador de PDF não carregou. Recarregue a página.'); return; }
+  const s = signatarios(), falta = s.filter(p=>!valida(p)).length;
+  const go = () => salvarArquivo(nomeArq('pdf'), gerarPDF());
+  if(falta) confirmar(`${falta} de ${s.length} assinatura(s) pendente(s). As linhas sairão em branco.`, 'Emitir assim mesmo', go); else go();
+};
+$('#salvarJson').onclick = () => salvarArquivo(nomeArq('json'), JSON.stringify(ata, null, 2));
+$('#abrir').onclick = () => $('#arquivo').click();
+$('#arquivo').onchange = async e => { const f = e.target.files[0]; if(!f) return;
+  try { const d = JSON.parse(await f.text()); if(!Array.isArray(d.participantes)) throw 0; ata = {...vazio(), ...d, exemplo:false}; boot(); toast('Ata aberta.'); }
+  catch { toast('Arquivo inválido: use um .json salvo por esta ferramenta.'); } e.target.value=''; };
+$('#novo').onclick = () => confirmar('Descartar esta ata e começar outra em branco?', 'Começar nova', () => { ata = vazio(); boot(); toast('Nova ata iniciada.'); });
+
+function boot(){ fill(); Object.keys(L).forEach(renderList); salvar(); refresh(); }
+boot();
+})();
+</script>
