@@ -81,6 +81,22 @@ button:disabled{opacity:.45;cursor:default}
 .fingerprint b{color:var(--ink);font-weight:500}
 .banner{border:1px solid var(--warn);color:var(--warn);background:color-mix(in srgb,var(--warn) 8%,transparent);border-radius:10px;padding:10px 14px;font-size:.88rem;margin-bottom:16px}
 
+.modes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin:6px 0 14px}
+.mode{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:10px;padding:12px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:.9rem;color:var(--ink)}
+.mode:has(input:checked){border-color:var(--accent);box-shadow:0 0 0 3px color-mix(in srgb,var(--accent) 14%,transparent)}
+.mode input{width:16px;height:16px;margin-top:3px;accent-color:var(--accent);padding:0}
+.mode small{display:block;color:var(--muted);font-size:.8rem;margin-top:2px;line-height:1.4}
+.flow{margin:4px 0 14px;padding-left:20px;display:flex;flex-direction:column;gap:8px;font-size:.9rem}
+.flow li::marker{color:var(--brass);font-weight:600}
+.url{font-family:var(--mono);font-size:.82rem;background:var(--bg);padding:1px 6px;border-radius:5px}
+.links{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
+.links a{color:var(--accent);font-weight:600;font-size:.86rem;padding:0 6px}
+.drop{border:1.5px dashed var(--line);border-radius:12px;padding:18px;text-align:center;display:flex;flex-direction:column;gap:4px;transition:border-color .15s,background .15s}
+.drop.over{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 6%,transparent)}
+.drop span{color:var(--muted);font-size:.84rem}
+.linkbtn{background:none;border:0;padding:0;color:var(--accent);font:inherit;text-decoration:underline;cursor:pointer}
+.govnote{font-size:.84rem;color:var(--muted);margin:12px 0 0}
+.extra{margin-top:10px;font-size:.84rem;color:var(--warn)}
 /* Folha */
 .sheetcol{position:sticky;top:calc(env(safe-area-inset-top,0px) + 16px)}
 @media (max-width:980px){.sheetcol{position:static}}
@@ -197,9 +213,26 @@ canvas{display:block;width:100%;height:220px;touch-action:none;cursor:crosshair}
 
       <section class="step">
         <h2><span class="num">VI</span> Assinaturas</h2>
-        <p class="hint">Entregue o aparelho a cada signatário. Se o texto mudar depois, a assinatura perde a validade e precisa ser refeita.</p>
+        <div class="modes" role="radiogroup" aria-label="Forma de assinatura">
+          <label class="mode"><input type="radio" name="modo" value="govbr" id="modoGov"><span><b>Gov.br</b><small>Assinatura avançada, com validade jurídica. Cada um assina com a própria conta.</small></span></label>
+          <label class="mode"><input type="radio" name="modo" value="aparelho" id="modoAp"><span><b>No aparelho</b><small>Rubrica desenhada na tela, para uso interno e ciência rápida.</small></span></label>
+        </div>
         <div class="fingerprint">Impressão digital SHA-256 do texto: <b id="hash">calculando…</b></div>
-        <div id="signers"></div>
+        <div id="govbr">
+          <ol class="flow">
+            <li><b>Emita o PDF</b> no botão “Emitir PDF para gov.br”. A última folha traz um quadro para cada signatário.</li>
+            <li><b>Envie ao primeiro da lista.</b> Ele entra em <span class="url">assinador.iti.br</span> com a conta gov.br (nível prata ou ouro), carrega o PDF, posiciona a assinatura no próprio quadro e baixa o arquivo assinado.</li>
+            <li><b>O arquivo assinado segue para o próximo</b>, que repete o processo sobre ele. As assinaturas se acumulam no mesmo PDF.</li>
+            <li><b>Confira aqui</b> carregando o PDF mais recente. A ferramenta mostra quem já assinou e quem falta.</li>
+          </ol>
+          <div class="links"><button type="button" data-copy="https://assinador.iti.br">Copiar link do Assinador</button><button type="button" data-copy="https://validar.iti.gov.br">Copiar link do Validador</button><a href="https://assinador.iti.br" target="_blank" rel="noopener">Abrir Assinador ↗</a></div>
+          <div class="drop" id="drop"><input type="file" id="pdfAss" accept="application/pdf,.pdf" hidden><b>Conferir PDF assinado</b><span>Arraste o arquivo aqui ou <button type="button" class="linkbtn" id="pdfAssBtn">escolha no aparelho</button>. A leitura acontece só neste navegador.</span></div>
+          <div id="govSigners"></div>
+        </div>
+        <div id="aparelho">
+          <p class="hint">Entregue o aparelho a cada signatário. Se o texto mudar depois, a assinatura perde a validade e precisa ser refeita.</p>
+          <div id="signers"></div>
+        </div>
       </section>
     </div>
 
@@ -278,13 +311,13 @@ const salvar = () => { try { localStorage.setItem(KEY, JSON.stringify(ata)); $('
 const toast = (m) => { const t = $('#toast'); t.textContent = m; clearTimeout(toast.t); toast.t = setTimeout(() => t.textContent = '', 5000); };
 
 // ---- hash ----
-const conteudo = () => { const c = {...ata}; delete c.assinaturas; delete c.exemplo; return JSON.stringify(c); };
+const conteudo = () => { const c = {...ata}; delete c.assinaturas; delete c.exemplo; delete c.modo; delete c.govbr; return JSON.stringify(c); };
 async function sha256(t){ const b = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(t)); return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join(''); }
 let H = '';
 async function refresh(){
   H = await sha256(conteudo());
   $('#hash').textContent = H;
-  const inv = signatarios().filter(p => ata.assinaturas[p.id] && ata.assinaturas[p.id].hash !== H).length;
+  const inv = modo()==='govbr' ? 0 : signatarios().filter(p => ata.assinaturas[p.id] && ata.assinaturas[p.id].hash !== H).length;
   const b = $('#banner'); b.hidden = !inv;
   b.textContent = inv ? `O texto mudou depois de ${inv} assinatura(s). Elas não valem para esta versão e precisam ser refeitas.` : '';
   renderSigners(); renderSheet();
@@ -332,6 +365,7 @@ const signatarios = () => ata.participantes.filter(p => p.assina && p.presente &
 const valida = p => ata.assinaturas[p.id]?.hash === H;
 const fmt = iso => new Date(iso).toLocaleString('pt-BR',{dateStyle:'short',timeStyle:'short'});
 function renderSigners(){
+  if(modo()==='govbr'){ renderGov(); return; }
   const s = signatarios(), ok = s.filter(valida).length;
   $('#sealCount').textContent = `${ok}/${s.length}`;
   $('#ringFg').style.strokeDashoffset = 100.5 * (1 - (s.length ? ok/s.length : 0));
@@ -378,6 +412,72 @@ function recorte(){
   c.width=x1-x0;c.height=y1-y0;c.getContext('2d').drawImage(pad,x0,y0,c.width,c.height,0,0,c.width,c.height); return c.toDataURL('image/png');
 }
 
+// ---- modo de assinatura ----
+const modo = () => ata.modo === 'aparelho' ? 'aparelho' : 'govbr';
+function aplicarModo(){
+  $('#modoGov').checked = modo()==='govbr'; $('#modoAp').checked = modo()==='aparelho';
+  $('#govbr').hidden = modo()!=='govbr'; $('#aparelho').hidden = modo()!=='aparelho';
+  $('#pdf').textContent = modo()==='govbr' ? 'Emitir PDF para gov.br' : 'Emitir PDF';
+}
+document.querySelectorAll('input[name=modo]').forEach(r => r.addEventListener('change', () => { ata.modo = r.value; salvar(); aplicarModo(); renderSigners(); renderSheet(); }));
+document.querySelectorAll('[data-copy]').forEach(b => b.addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(b.dataset.copy); toast('Link copiado: '+b.dataset.copy); } catch { toast(b.dataset.copy); } }));
+
+// Lê as assinaturas digitais de um PDF (PAdES) e extrai o nome do titular do certificado.
+const norm = t => String(t||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toUpperCase().replace(/[^A-Z ]/g,' ').replace(/\s+/g,' ').trim();
+function lerAssinaturas(buf){
+  const bytes = new Uint8Array(buf), txt = new TextDecoder('latin1').decode(bytes);
+  const blocos = []; const re = /\/Contents\s*<([0-9A-Fa-f\s]{2000,})>/g; let m;
+  while((m = re.exec(txt))) blocos.push(m[1].replace(/\s/g,''));
+  const nomes = [];
+  blocos.forEach(hex => {
+    const der = new Uint8Array(hex.length/2); for(let i=0;i<der.length;i++) der[i] = parseInt(hex.substr(i*2,2),16);
+    const cns = [];
+    for(let i=0;i<der.length-8;i++){
+      if(der[i]===0x06 && der[i+1]===0x03 && der[i+2]===0x55 && der[i+3]===0x04 && der[i+4]===0x03){
+        const tag = der[i+5], len = der[i+6]; if(len>=128) continue;
+        const raw = der.slice(i+7, i+7+len);
+        const val = tag===0x1E ? new TextDecoder('utf-16be').decode(raw) : new TextDecoder(tag===0x0C?'utf-8':'latin1').decode(raw);
+        cns.push(val);
+      }
+    }
+    const titular = cns.find(c => !/^AC\b|AUTORIDADE|CERTIFICADORA|RAIZ|ICP|GOV\.?BR|GOVERNO/i.test(c));
+    if(titular) nomes.push(titular.split(':')[0].trim());
+  });
+  return { total: blocos.length, nomes };
+}
+function casar(nomeCert){
+  const n = norm(nomeCert); if(!n) return null;
+  return signatarios().find(p => { const a = norm(p.nome); return a && (a===n || n.includes(a) || a.includes(n)); }) || null;
+}
+async function conferir(file){
+  if(!file) return;
+  if(!/pdf$/i.test(file.type) && !/\.pdf$/i.test(file.name)){ toast('Escolha um arquivo PDF.'); return; }
+  const r = lerAssinaturas(await file.arrayBuffer());
+  const marcados = {}; const extras = [];
+  r.nomes.forEach(nm => { const p = casar(nm); if(p) marcados[p.id] = nm; else extras.push(nm); });
+  ata.govbr = { arquivo:file.name, em:new Date().toISOString(), total:r.total, marcados, extras };
+  salvar(); renderSigners();
+  toast(r.total ? `${r.total} assinatura(s) digital(is) encontrada(s) em ${file.name}.` : 'Nenhuma assinatura digital encontrada neste PDF.');
+}
+$('#pdfAssBtn').onclick = () => $('#pdfAss').click();
+$('#pdfAss').onchange = e => { conferir(e.target.files[0]); e.target.value=''; };
+const drop = $('#drop');
+['dragenter','dragover'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave','drop'].forEach(ev => drop.addEventListener(ev, e => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', e => conferir(e.dataTransfer.files[0]));
+function renderGov(){
+  const s = signatarios(), g = ata.govbr || {marcados:{},extras:[]}, ok = s.filter(p => g.marcados?.[p.id]).length;
+  $('#sealCount').textContent = `${ok}/${s.length}`;
+  $('#ringFg').style.strokeDashoffset = 100.5 * (1 - (s.length ? ok/s.length : 0));
+  const prox = s.find(p => !g.marcados?.[p.id]);
+  $('#govSigners').innerHTML = (s.length ? s.map((p,i) => { const c = g.marcados?.[p.id];
+    return `<div class="signer"><div class="who"><b>${i+1}. ${esc(nomeMil(p))}</b>${c?'<span class="pill ok">assinou no gov.br</span>':p===prox?'<span class="pill pend">próximo a assinar</span>':'<span class="pill pend">aguardando</span>'}<small>${esc([p.funcao, p.mat?'Mat. '+p.mat:''].filter(Boolean).join(' · '))}${c?' · certificado: '+esc(c):''}</small></div><div></div></div>`; }).join('')
+    : '<p class="hint" style="color:var(--muted);margin:12px 0 0">Marque presentes com “Assina a ata” para que apareçam aqui.</p>')
+    + (g.extras?.length ? `<div class="extra">Assinatura(s) de pessoa fora da lista: ${g.extras.map(esc).join(', ')}. Confira se o nome está escrito igual ao do gov.br.</div>` : '')
+    + `<p class="govnote">${g.arquivo ? `Última conferência: ${esc(g.arquivo)}, ${fmt(g.em)}. ` : ''}A conferência lê os nomes dos certificados. A validade jurídica se confirma em <span class="url">validar.iti.gov.br</span>.</p>`;
+}
+
 // ---- texto da ata ----
 const dExt = iso => iso ? new Date(iso+'T12:00').toLocaleDateString('pt-BR',{day:'numeric',month:'long',year:'numeric'}) : '___';
 const dCurta = iso => iso ? new Date(iso+'T12:00').toLocaleDateString('pt-BR') : '';
@@ -417,7 +517,7 @@ function renderSheet(){
     <h4>Encerramento</h4>
     <p>${esc(ata.encerramento)}${ata.fim?' Encerrada às '+esc(ata.fim)+'.':''}</p>
     <h4>Assinaturas</h4>
-    <div class="sigs">${s.map(p=>{const a=ata.assinaturas[p.id],v=valida(p);return `<div class="sig"><div class="ink">${v?`<img src="${a.img}" alt="">`:''}</div><div class="line">${esc(p.nome).toUpperCase()} – ${esc(p.posto)}</div><div>${esc([p.funcao, p.mat?'Mat. '+p.mat:''].filter(Boolean).join(' · '))}</div>${v?`<small>assinado em ${fmt(a.em)}</small>`:''}</div>`}).join('')}</div>
+    <div class="sigs">${s.map(p=>{const a=ata.assinaturas[p.id],v=modo()==='aparelho'&&valida(p);return `<div class="sig"><div class="ink">${v?`<img src="${a.img}" alt="">`:''}</div><div class="line">${esc(p.nome).toUpperCase()} – ${esc(p.posto)}</div><div>${esc([p.funcao, p.mat?'Mat. '+p.mat:''].filter(Boolean).join(' · '))}</div>${v?`<small>assinado em ${fmt(a.em)}</small>`:''}</div>`}).join('')}</div>
     <div class="foot">SHA-256 do conteúdo: ${H}</div>`;
 }
 
@@ -454,6 +554,23 @@ function gerarPDF(){
   if(ata.acoes.length){ sec('Encaminhamentos'); tabela(['Ação','Responsável','Prazo'], ata.acoes.map(a=>[a.acao,a.resp,dCurta(a.prazo)]), [96,46,24]); }
   if(ata.obs){ sec('Declarações'); par(ata.obs); }
   sec('Encerramento'); par(ata.encerramento + (ata.fim?' Encerrada às '+ata.fim+'.':''));
+  if(modo()==='govbr'){
+    const s = signatarios(); doc.addPage(); moldura(); y = 26;
+    doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.setTextColor(33,58,107); doc.text('FOLHA DE ASSINATURAS', W/2, y, {align:'center'}); y += 6;
+    doc.setFont('helvetica','normal'); doc.setFontSize(8); doc.setTextColor(70);
+    doc.splitTextToSize(`${ata.titulo||'Ata de Reunião'}. Assinatura eletrônica avançada pelo gov.br (Lei nº 14.063/2020, art. 4º, II). Cada signatário posiciona a própria assinatura no quadro com o seu nome, na ordem abaixo. Verificação em validar.iti.gov.br.`, CW).forEach(l => { doc.text(l, W/2, y, {align:'center'}); y += 4; });
+    doc.setTextColor(20); y += 4;
+    const bh = Math.min(42, (268 - y) / Math.max(1, Math.min(s.length, 5)) - 3);
+    s.forEach((p,i) => {
+      if(y + bh > 276){ doc.addPage(); moldura(); y = 24; }
+      doc.setDrawColor(160,124,52); doc.setLineWidth(.3); doc.setLineDashPattern([1.2,1.2],0); doc.rect(M, y, CW, bh); doc.setLineDashPattern([],0);
+      doc.setFont('helvetica','bold'); doc.setFontSize(8.5); doc.text(`${i+1}. ${p.nome.toUpperCase()} – ${p.posto}`, M+3, y+5);
+      doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(90);
+      doc.text([p.funcao, p.mat?'Mat. '+p.mat:''].filter(Boolean).join(' · '), M+3, y+9);
+      doc.text('Posicione aqui a assinatura gov.br', M+CW-3, y+bh-3, {align:'right'}); doc.setTextColor(20);
+      y += bh + 3;
+    });
+  } else {
   sec('Assinaturas');
   const s = signatarios(), colW = (CW-12)/2;
   s.forEach((p,i) => { const col=i%2; if(col===0) need(34); const x = M + col*(colW+12);
@@ -464,6 +581,7 @@ function gerarPDF(){
     doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.text([p.funcao, p.mat?'Mat. '+p.mat:''].filter(Boolean).join(' · '), x+colW/2, y+25.5, {align:'center'});
     if(a && valida(p)){ doc.setFontSize(6.5); doc.setTextColor(110); doc.text('Assinado eletronicamente em '+fmt(a.em), x+colW/2, y+29, {align:'center'}); doc.setTextColor(20); }
     if(col===1 || i===s.length-1) y += 34; });
+  }
   const n = doc.getNumberOfPages();
   for(let i=1;i<=n;i++){ doc.setPage(i); doc.setFont('courier','normal'); doc.setFontSize(6.5); doc.setTextColor(110);
     doc.text(`SHA-256 ${H}`, M, 284); doc.text(`${i}/${n}`, W-M, 284, {align:'right'}); doc.setTextColor(20); }
@@ -492,7 +610,7 @@ function confirmar(msg, sim, acao){
 $('#pdf').onclick = async () => {
   await refresh();
   if(!window.jspdf){ toast('O gerador de PDF não carregou. Recarregue a página.'); return; }
-  const s = signatarios(), falta = s.filter(p=>!valida(p)).length;
+  const s = signatarios(), falta = modo()==='govbr' ? 0 : s.filter(p=>!valida(p)).length;
   const go = () => salvarArquivo(nomeArq('pdf'), gerarPDF());
   if(falta) confirmar(`${falta} de ${s.length} assinatura(s) pendente(s). As linhas sairão em branco.`, 'Emitir assim mesmo', go); else go();
 };
@@ -503,7 +621,7 @@ $('#arquivo').onchange = async e => { const f = e.target.files[0]; if(!f) return
   catch { toast('Arquivo inválido: use um .json salvo por esta ferramenta.'); } e.target.value=''; };
 $('#novo').onclick = () => confirmar('Descartar esta ata e começar outra em branco?', 'Começar nova', () => { ata = vazio(); boot(); toast('Nova ata iniciada.'); });
 
-function boot(){ fill(); Object.keys(L).forEach(renderList); salvar(); refresh(); }
+function boot(){ fill(); aplicarModo(); Object.keys(L).forEach(renderList); salvar(); refresh(); }
 boot();
 })();
 </script>
